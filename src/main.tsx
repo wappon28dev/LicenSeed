@@ -1,6 +1,7 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
+import { Routes } from "@generouted/react-router";
+import { createRoot } from "react-dom/client";
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode></React.StrictMode>,
-);
+const root = document.getElementById("root");
+if (root == null) throw new Error("Root element not found");
+
+createRoot(root).render(<Routes />);
