@@ -6,6 +6,7 @@ import { vstack } from "panda/patterns/vstack";
 import { type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import { CopyWrapper } from "@/components/CopyWrapper";
+import { FileTree } from "@/components/FileTree";
 import { Splitter } from "@/components/Splitter";
 
 function Main(): ReactElement {
@@ -150,9 +151,20 @@ export default function Page(): ReactElement {
           initialSize="1fr"
           order={0}
         >
-          <VStack justifyContent="space-between">
-            <p.p>Directory</p.p>
-            <p.p>metadata</p.p>
+          <VStack justifyContent="space-between" w="100%">
+            <p.div
+              className={css({
+                "& .FolderTree": {
+                  h: "50vh",
+                  w: "100%",
+                  overflow: "scroll",
+                },
+              })}
+              w="100%"
+            >
+              <FileTree />
+            </p.div>
+            <p.div h="50%">metadata</p.div>
           </VStack>
         </Resplit.Pane>
         <Splitter />
