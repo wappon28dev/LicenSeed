@@ -12,7 +12,14 @@ export default defineConfig({
 
   // Useful for theme customization
   theme: {
-    extend: {},
+    extend: {
+      tokens: {
+        fonts: {
+          line: { value: "var(--font-line)" },
+          udev: { value: "var(--font-udev)" },
+        },
+      },
+    },
   },
 
   // The output directory for your css system

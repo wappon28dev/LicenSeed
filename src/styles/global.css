@@ -1,1 +1,69 @@
 @layer reset, base, tokens, recipes, utilities;
+
+:root {
+  --font-line: "LINE Seed JP", sans-serif;
+  --font-udev: "UDEV Gothic 35 JPDOC", monospace;
+  --scrollbar-width: 0px;
+}
+
+html {
+  font-size: var(--font-sizes-lg);
+}
+
+body {
+  font-family: var(--font-line);
+  font-feature-settings: "palt";
+}
+
+pre,
+code {
+  font-family: var(--font-udev);
+}
+
+button {
+  cursor: pointer;
+}
+
+ul,
+menu,
+dir {
+  display: block;
+  list-style-type: disc;
+  padding-left: 1.3rem;
+}
+ol {
+  display: block;
+  list-style-type: decimal;
+  padding-left: 1.3rem;
+}
+li {
+  display: list-item;
+}
+ul ul,
+ol ul {
+  list-style-type: circle;
+}
+ol ol ul,
+ol ul ul,
+ul ol ul,
+ul ul ul {
+  list-style-type: square;
+}
+
+table {
+  border: 1px solid;
+  th,
+  td {
+    border: 1px solid;
+    padding: var(--spacing-3);
+  }
+  th {
+    border-bottom: 2px solid;
+  }
+}
+
+@media (width < 768px) {
+  html {
+    font-size: var(--font-sizes-md);
+  }
+}

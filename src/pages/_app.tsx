@@ -3,6 +3,7 @@ import { type ReactElement } from "react";
 import { Outlet } from "react-router-dom";
 
 import "@/styles/global.css";
+import "@/styles/fonts.css";
 
 export default function Layout(): ReactElement {
   return (
