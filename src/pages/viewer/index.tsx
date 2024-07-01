@@ -1,9 +1,10 @@
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
+import { appWindow } from "@tauri-apps/api/window";
 import { LoremIpsum } from "lorem-ipsum";
 import { css } from "panda/css";
 import { HStack, VStack, styled as p } from "panda/jsx";
 import { vstack } from "panda/patterns/vstack";
-import { type ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import { CopyWrapper } from "@/components/CopyWrapper";
 import { FileTree } from "@/components/FileTree";
@@ -132,6 +133,18 @@ function Main(): ReactElement {
 }
 
 export default function Page(): ReactElement {
+  const [files, setFiles] = useState<string[]>([]);
+
+  useEffect(() => {
+    void appWindow.onFileDropEvent((ev) => {
+      if (ev.payload.type !== "drop") {
+        return;
+      }
+      setFiles(ev.payload.paths);
+      console.log(ev.payload.paths);
+    });
+  }, []);
+
   return (
     <p.div display="flex" h="100%" w="100%">
       <Resplit.Root
@@ -164,7 +177,9 @@ export default function Page(): ReactElement {
             >
               <FileTree />
             </p.div>
-            <p.div h="50%">metadata</p.div>
+            <p.div h="50%" w="100%">
+              <p.p>{files.join(",")}</p.p>
+            </p.div>
           </VStack>
         </Resplit.Pane>
         <Splitter />

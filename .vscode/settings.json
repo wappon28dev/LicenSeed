@@ -1,0 +1,13 @@
+{
+  "cSpell.words": [
+    "iconify",
+    "Resplit",
+    "rspc",
+    "tauri",
+    "Tauri",
+    "vstack"
+  ],
+  "rust-analyzer.linkedProjects": [
+    "src-tauri/Cargo.toml"
+  ]
+}

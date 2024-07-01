@@ -17,6 +17,7 @@ serde_json = "1"
 rspc-tauri = "0.0.1"
 rspc = "0.2.0"
 tokio = "1.38.0"
+specta = { version = "1.0.5", features = ["typescript"] }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

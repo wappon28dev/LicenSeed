@@ -1483,6 +1483,7 @@ dependencies = [
  "rspc-tauri",
  "serde",
  "serde_json",
+ "specta",
  "tauri",
  "tauri-build",
  "tokio",
