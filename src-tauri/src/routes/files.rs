@@ -1,12 +1,14 @@
-use serde::Deserialize;
+use serde::Serialize;
 use specta::Type;
 
-#[derive(Type, Deserialize)]
+#[derive(Serialize, Type)]
 pub struct FileEntry {
     pub path: String,
     pub is_dir: bool,
 }
 
+#[tauri::command]
+#[specta::specta]
 pub fn show_files(input: String) -> Vec<FileEntry> {
     let path = std::path::Path::new(&input);
     let mut files = Vec::new();

@@ -25,4 +25,4 @@ dist-ssr
 panda
 
 
-src/types/bindings.d.ts
+src/types/bindings.ts

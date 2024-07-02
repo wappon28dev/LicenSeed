@@ -18,7 +18,7 @@
     "@rspc/client": "^0.2.0",
     "@rspc/react-query": "^0.0.0-main-5a753130",
     "@rspc/tauri": "^0.2.0",
-    "@tauri-apps/api": "^1",
+    "@tauri-apps/api": "^2.0.0-beta.13",
     "lorem-ipsum": "^2.0.8",
     "neverthrow": "^6.2.2",
     "react": "^18.2.0",
@@ -32,7 +32,7 @@
   "devDependencies": {
     "@csstools/postcss-cascade-layers": "^4.0.4",
     "@pandacss/dev": "^0.40.1",
-    "@tauri-apps/cli": "^1",
+    "@tauri-apps/cli": "^2.0.0-beta.20",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",

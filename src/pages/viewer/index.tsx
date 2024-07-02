@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { appWindow } from "@tauri-apps/api/window";
+import { getCurrent } from "@tauri-apps/api/webview";
 import { LoremIpsum } from "lorem-ipsum";
 import { css } from "panda/css";
 import { HStack, VStack, styled as p } from "panda/jsx";
@@ -7,8 +7,10 @@ import { vstack } from "panda/patterns/vstack";
 import { useEffect, useState, type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import { CopyWrapper } from "@/components/CopyWrapper";
-import { FileTree } from "@/components/FileTree";
 import { Splitter } from "@/components/Splitter";
+import { FileTree } from "@/components/_FileTree";
+import { api } from "@/lib/services/api";
+import { type FileEntry } from "@/types/bindings";
 
 function Main(): ReactElement {
   const Card = p("div", {
@@ -133,16 +135,23 @@ function Main(): ReactElement {
 }
 
 export default function Page(): ReactElement {
-  const [files, setFiles] = useState<string[]>([]);
+  const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
+
+  async function call(): Promise<void> {
+    void getCurrent().onDragDropEvent((ev) => {
+      void (async () => {
+        if (ev.payload.type !== "dropped") {
+          return;
+        }
+        const result = await api.showFiles(ev.payload.paths[0]);
+        setFileEntries(result);
+        console.log("result", result);
+      })();
+    });
+  }
 
   useEffect(() => {
-    void appWindow.onFileDropEvent((ev) => {
-      if (ev.payload.type !== "drop") {
-        return;
-      }
-      setFiles(ev.payload.paths);
-      console.log(ev.payload.paths);
-    });
+    void call();
   }, []);
 
   return (
@@ -175,10 +184,10 @@ export default function Page(): ReactElement {
               })}
               w="100%"
             >
-              <FileTree />
+              <FileTree fileEntries={fileEntries} />
             </p.div>
             <p.div h="50%" w="100%">
-              <p.p>{files.join(",")}</p.p>
+              metadata
             </p.div>
           </VStack>
         </Resplit.Pane>
