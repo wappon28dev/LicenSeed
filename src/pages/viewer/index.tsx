@@ -4,13 +4,13 @@ import { LoremIpsum } from "lorem-ipsum";
 import { css } from "panda/css";
 import { HStack, VStack, styled as p } from "panda/jsx";
 import { vstack } from "panda/patterns/vstack";
-import { useEffect, useState, type ReactElement } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 import { Resplit } from "react-resplit";
 import { CopyWrapper } from "@/components/CopyWrapper";
+import { FileTree } from "@/components/FileTree";
 import { Splitter } from "@/components/Splitter";
-import { FileTree } from "@/components/_FileTree";
 import { api } from "@/lib/services/api";
-import { type FileEntry } from "@/types/bindings";
+import type { FileEntry } from "@/types/bindings";
 
 function Main(): ReactElement {
   const Card = p("div", {
@@ -137,21 +137,21 @@ function Main(): ReactElement {
 export default function Page(): ReactElement {
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
 
-  async function call(): Promise<void> {
-    void getCurrent().onDragDropEvent((ev) => {
-      void (async () => {
-        if (ev.payload.type !== "dropped") {
-          return;
-        }
-        const result = await api.showFiles(ev.payload.paths[0]);
-        setFileEntries(result);
-        console.log("result", result);
-      })();
-    });
-  }
-
   useEffect(() => {
-    void call();
+    const unListen = getCurrent().onDragDropEvent((ev) => {
+      if (ev.payload.type !== "dropped") {
+        return;
+      }
+      void api.showFiles(ev.payload.paths[0]).then((result) => {
+        setFileEntries(result);
+      });
+    });
+
+    return () => {
+      void unListen.then((fn) => {
+        fn();
+      });
+    };
   }, []);
 
   return (

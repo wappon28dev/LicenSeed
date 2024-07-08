@@ -1,47 +1,59 @@
+import { HStack, styled as p, VStack } from "panda/jsx";
 import { type ReactElement } from "react";
-import {
-  UncontrolledTreeEnvironment,
-  Tree,
-  StaticTreeDataProvider,
-} from "react-complex-tree";
+import { type NodeRendererProps, Tree } from "react-arborist";
+import { getIconUrlByName, getIconUrlForFilePath } from "vscode-material-icons";
+import { type FileEntry } from "@/types/bindings";
 
-import "react-complex-tree/lib/style-modern.css";
-
-export function FileTree(): ReactElement {
-  const items = {
-    root: {
-      index: "root",
-      isFolder: true,
-      children: ["child1", "child2"],
-      data: "Root item",
-    },
-    child1: {
-      index: "child1",
-      children: [],
-      data: "Child item 1",
-    },
-    child2: {
-      index: "child2",
-      isFolder: true,
-      children: ["child3"],
-      data: "Child item 2",
-    },
-    child3: {
-      index: "child3",
-      children: [],
-      data: "Child item 3",
-    },
-  };
+function Node({
+  node,
+  style,
+  dragHandle,
+}: NodeRendererProps<FileEntry>): ReactElement {
+  const ICONS_URL = "/assets/material-icons";
+  const icon = getIconUrlForFilePath(node.data.name, ICONS_URL);
+  const folderIcon = getIconUrlByName("folder", ICONS_URL);
 
   return (
-    <UncontrolledTreeEnvironment
-      dataProvider={
-        new StaticTreeDataProvider(items, (item, data) => ({ ...item, data }))
-      }
-      getItemTitle={(item) => item.data}
-      viewState={{}}
+    <HStack
+      ref={dragHandle}
+      onClick={() => {
+        node.toggle();
+      }}
+      style={style}
     >
-      <Tree rootItem="root" treeId="tree-1" treeLabel="Tree Example" />
-    </UncontrolledTreeEnvironment>
+      <p.img
+        alt=""
+        height="1em"
+        src={node.data.is_dir ? folderIcon : icon}
+        width="auto"
+      />
+      <p.code overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+        {node.data.name}
+      </p.code>
+    </HStack>
+  );
+}
+
+export function FileTree({
+  fileEntries,
+}: {
+  fileEntries: FileEntry[];
+}): ReactElement {
+  return (
+    <VStack w="100%">
+      <p>{fileEntries?.length}</p>
+      {fileEntries?.length !== 0 && (
+        <Tree
+          idAccessor={(d) => d.name}
+          indent={24}
+          initialData={fileEntries}
+          onToggle={(node) => {
+            console.log(node);
+          }}
+        >
+          {Node}
+        </Tree>
+      )}
+    </VStack>
   );
 }

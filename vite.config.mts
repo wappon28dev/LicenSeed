@@ -1,11 +1,24 @@
 import { defineConfig } from "vite";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 import react from "@vitejs/plugin-react";
 import paths from "vite-tsconfig-paths";
 import generouted from "@generouted/react-router/plugin";
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [react(), paths(), generouted()],
+  plugins: [
+    react(),
+    paths(),
+    generouted(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: "node_modules/vscode-material-icons/generated/icons/*",
+          dest: "assets/material-icons",
+        },
+      ],
+    }),
+  ],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+/*
+import { useMemo, type ReactElement } from "react";
 import {
   UncontrolledTreeEnvironment,
   Tree,
@@ -11,27 +12,27 @@ import { type FileEntry } from "@/types/bindings";
 import "react-complex-tree/lib/style-modern.css";
 
 type TreeItemData<T> = Record<TreeItemIndex, TreeItem<T>>;
-type FileTreeItem = TreeItemData<FileEntry>;
+type FileTreeItem = TreeItemData<string>;
 
 function fileEntriesToTreeItems(fileEntries: FileEntry[]): FileTreeItem {
-  const treeItems: FileTreeItem = {};
-
-  treeItems.root = {
-    index: "root",
-    data: {
-      path: "root",
-      is_dir: true,
+  const treeItems: FileTreeItem = {
+    root: {
+      index: "root",
+      data: "root",
+      children: fileEntries.map((entry) => entry.path.replaceAll("\\", "_")),
     },
-    children: fileEntries.map((entry) => entry.path),
   };
 
-  fileEntries.forEach((entry, idx) => {
-    treeItems[entry.path] = {
-      index: entry.path,
-      data: entry,
+  fileEntries.forEach((entry) => {
+    const index = entry.path.replaceAll("\\", "_");
+    treeItems[index] = {
+      index,
+      data: index,
       children: [],
     };
   });
+
+  console.log("treeItems: ", treeItems);
 
   return treeItems;
 }
@@ -41,25 +42,25 @@ export function FileTree({
 }: {
   fileEntries: FileEntry[];
 }): ReactElement {
-  const [treeData, setTreeData] = useState<FileTreeItem>({});
-  const dataProvider = useMemo(
-    () => new StaticTreeDataProvider(fileEntriesToTreeItems(fileEntries)),
-    [treeData],
+  const treeData = useMemo(
+    () => fileEntriesToTreeItems(fileEntries),
+    [fileEntries],
   );
 
-  useEffect(() => {
-    setTreeData(fileEntriesToTreeItems(fileEntries));
-    console.log("fileEntries", fileEntries);
-    console.log("treeData", treeData);
-  }, [fileEntries]);
+  const dataProvider = useMemo(
+    () =>
+      new StaticTreeDataProvider(treeData, (item, data) => ({ ...item, data })),
+    [treeData],
+  );
 
   return (
     <UncontrolledTreeEnvironment
       dataProvider={dataProvider}
-      getItemTitle={(item) => item.data}
-      viewState={{}}
+      getItemTitle={(item) => item.data} // アイテムのタイトルが正しいか確認
+      viewState={{}} // 必要に応じて適切な viewState を設定
     >
       <Tree rootItem="root" treeId="tree-1" treeLabel="Tree Example" />
     </UncontrolledTreeEnvironment>
   );
 }
+*/
