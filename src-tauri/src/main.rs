@@ -8,7 +8,7 @@ use routes::files::show_files;
 fn main() {
     let invoke_handler = {
         let builder =
-            tauri_specta::ts::builder().commands(tauri_specta::collect_commands![show_files,]);
+            tauri_specta::ts::builder().commands(tauri_specta::collect_commands![show_files]);
 
         #[cfg(debug_assertions)]
         let builder = builder.path("../src/types/bindings.ts");

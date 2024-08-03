@@ -142,7 +142,9 @@ export default function Page(): ReactElement {
       if (ev.payload.type !== "dropped") {
         return;
       }
-      void api.showFiles(ev.payload.paths[0]).then((result) => {
+      const path = ev.payload.paths.at(0);
+      if (path == null) throw new Error("Path at 0 is null!");
+      void api.showFiles(path).then((result) => {
         setFileEntries(result);
       });
     });

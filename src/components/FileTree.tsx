@@ -1,14 +1,17 @@
+import { Icon } from "@iconify/react";
 import { HStack, styled as p, VStack } from "panda/jsx";
-import { type ReactElement } from "react";
-import { type NodeRendererProps, Tree } from "react-arborist";
+import { useEffect, useState, type ReactElement } from "react";
+import { type NodeApi, type NodeRendererProps, Tree } from "react-arborist";
 import { getIconUrlByName, getIconUrlForFilePath } from "vscode-material-icons";
+import { processFileEntries } from "@/lib/utils/file";
 import { type FileEntry } from "@/types/bindings";
+import { type FileTreeData } from "@/types/file";
 
 function Node({
   node,
   style,
   dragHandle,
-}: NodeRendererProps<FileEntry>): ReactElement {
+}: NodeRendererProps<FileTreeData>): ReactElement {
   const ICONS_URL = "/assets/material-icons";
   const icon = getIconUrlForFilePath(node.data.name, ICONS_URL);
   const folderIcon = getIconUrlByName("folder", ICONS_URL);
@@ -16,15 +19,27 @@ function Node({
   return (
     <HStack
       ref={dragHandle}
+      _hover={{
+        bg: "gray.100",
+      }}
       onClick={() => {
         node.toggle();
       }}
       style={style}
+      w="100%"
     >
+      <p.div
+        style={{
+          opacity: node.data.isDir ? 1 : 0,
+          rotate: node.isOpen ? "0deg" : "-90deg",
+        }}
+      >
+        <Icon icon="mdi:triangle-small-down" />
+      </p.div>
       <p.img
         alt=""
         height="1em"
-        src={node.data.is_dir ? folderIcon : icon}
+        src={node.data.isDir ? folderIcon : icon}
         width="auto"
       />
       <p.code overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
@@ -39,21 +54,35 @@ export function FileTree({
 }: {
   fileEntries: FileEntry[];
 }): ReactElement {
+  const [treeData, setTreeData] = useState<FileTreeData[]>([]);
+  const [activatedNode, setActivatedNode] = useState<NodeApi<FileTreeData>>();
+
+  useEffect(() => {
+    void processFileEntries(fileEntries).then((e) => {
+      setTreeData(e);
+    });
+  }, [fileEntries]);
+
+  useEffect(() => {
+    if (activatedNode == null) return;
+    const isTooDeep =
+      activatedNode.data.isDir && activatedNode.data.children == null;
+    console.log("too deep", isTooDeep);
+  }, [activatedNode]);
+
   return (
-    <VStack w="100%">
-      <p>{fileEntries?.length}</p>
-      {fileEntries?.length !== 0 && (
-        <Tree
-          idAccessor={(d) => d.name}
-          indent={24}
-          initialData={fileEntries}
-          onToggle={(node) => {
-            console.log(node);
-          }}
-        >
-          {Node}
-        </Tree>
-      )}
+    <VStack h="100%" w="100%">
+      <Tree
+        data={treeData}
+        disableMultiSelection
+        idAccessor={(d) => d.id}
+        indent={24}
+        onActivate={setActivatedNode}
+        openByDefault={false}
+        width="100%"
+      >
+        {Node}
+      </Tree>
     </VStack>
   );
 }
