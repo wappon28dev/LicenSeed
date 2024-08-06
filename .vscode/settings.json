@@ -1,6 +1,8 @@
 {
   "cSpell.words": [
     "iconify",
+    "LicenSeed",
+    "nanostores",
     "pathe",
     "Resplit",
     "rspc",
@@ -8,7 +10,7 @@
     "tauri",
     "Tauri",
     "vstack",
-    "LicenSeed"
+    "wcmatch"
   ],
   "rust-analyzer.linkedProjects": [
     "src-tauri/Cargo.toml"

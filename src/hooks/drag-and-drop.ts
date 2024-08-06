@@ -6,6 +6,7 @@ import { type FileEntry } from "@/types/bindings";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function useDragAndDrop() {
+  const [basePath, setBasePath] = useState<string>();
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
 
   useEffect(() => {
@@ -18,6 +19,7 @@ export function useDragAndDrop() {
       if (path == null) throw new Error("`path[0]` is null!");
 
       const normalizedPath = normalize(path);
+      setBasePath(normalizedPath);
       void api.showFiles(normalizedPath).then((result) => {
         setFileEntries(result);
       });
@@ -30,5 +32,5 @@ export function useDragAndDrop() {
     };
   }, []);
 
-  return { fileEntries, setFileEntries };
+  return { fileEntries, setFileEntries, basePath };
 }

@@ -133,7 +133,7 @@ function Main(): ReactElement {
 }
 
 export default function Page(): ReactElement {
-  const { fileEntries } = useDragAndDrop();
+  const { fileEntries, basePath } = useDragAndDrop();
 
   return (
     <p.div display="flex" h="100%" w="100%">
@@ -165,7 +165,9 @@ export default function Page(): ReactElement {
               })}
               w="100%"
             >
-              <FileTree fileEntries={fileEntries} />
+              {basePath != null && (
+                <FileTree basePath={basePath} fileEntries={fileEntries} />
+              )}
             </p.div>
             <p.div h="50%" w="100%">
               metadata
