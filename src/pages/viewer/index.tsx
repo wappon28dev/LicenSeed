@@ -1,16 +1,14 @@
 import { Icon } from "@iconify/react";
-import { getCurrent } from "@tauri-apps/api/webview";
 import { LoremIpsum } from "lorem-ipsum";
 import { css } from "panda/css";
 import { HStack, VStack, styled as p } from "panda/jsx";
 import { vstack } from "panda/patterns/vstack";
-import { type ReactElement, useEffect, useState } from "react";
+import { type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import { CopyWrapper } from "@/components/CopyWrapper";
 import { FileTree } from "@/components/FileTree";
 import { Splitter } from "@/components/Splitter";
-import { api } from "@/lib/services/api";
-import type { FileEntry } from "@/types/bindings";
+import { useDragAndDrop } from "@/hooks/drag-and-drop";
 
 function Main(): ReactElement {
   const Card = p("div", {
@@ -135,26 +133,7 @@ function Main(): ReactElement {
 }
 
 export default function Page(): ReactElement {
-  const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
-
-  useEffect(() => {
-    const unListen = getCurrent().onDragDropEvent((ev) => {
-      if (ev.payload.type !== "dropped") {
-        return;
-      }
-      const path = ev.payload.paths.at(0);
-      if (path == null) throw new Error("Path at 0 is null!");
-      void api.showFiles(path).then((result) => {
-        setFileEntries(result);
-      });
-    });
-
-    return () => {
-      void unListen.then((fn) => {
-        fn();
-      });
-    };
-  }, []);
+  const { fileEntries } = useDragAndDrop();
 
   return (
     <p.div display="flex" h="100%" w="100%">

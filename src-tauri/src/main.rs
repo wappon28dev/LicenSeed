@@ -4,20 +4,19 @@
 mod routes;
 
 use routes::files::show_files;
+use specta_typescript::Typescript;
+use tauri_specta::{collect_commands, Builder};
 
 fn main() {
-    let invoke_handler = {
-        let builder =
-            tauri_specta::ts::builder().commands(tauri_specta::collect_commands![show_files]);
+    let builder = Builder::<tauri::Wry>::new().commands(collect_commands![show_files]);
 
-        #[cfg(debug_assertions)]
-        let builder = builder.path("../src/types/bindings.ts");
-
-        builder.build().unwrap()
-    };
+    #[cfg(debug_assertions)]
+    builder
+        .export(Typescript::default(), "../src/types/bindings.ts")
+        .expect("Failed to export typescript bindings");
 
     tauri::Builder::default()
-        .invoke_handler(invoke_handler)
+        .invoke_handler(builder.invoke_handler())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

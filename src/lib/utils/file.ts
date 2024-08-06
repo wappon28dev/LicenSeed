@@ -1,5 +1,5 @@
-import { join } from "@tauri-apps/api/path";
 import naturalCompare from "natural-compare-lite";
+import { join } from "pathe";
 import { type FileEntry } from "@/types/bindings";
 import { type FileTreeData } from "@/types/file";
 
@@ -15,15 +15,10 @@ export function sortFileEntriesNaturally(
   return [...sortedDirs, ...sortedFiles];
 }
 
-export async function processFileEntries(
-  entries: FileEntry[],
-): Promise<FileTreeData[]> {
-  return await Promise.all(
-    sortFileEntriesNaturally(entries).map(async (f) => ({
-      ...f,
-      id: await join(f.basePath, f.name),
-      children:
-        f.children != null ? await processFileEntries(f.children) : null,
-    })),
-  );
+export function fileEntry2fileTreeData(entries: FileEntry[]): FileTreeData[] {
+  return sortFileEntriesNaturally(entries).map((f) => ({
+    ...f,
+    id: join(f.basePath, f.name),
+    children: f.children != null ? fileEntry2fileTreeData(f.children) : null,
+  }));
 }

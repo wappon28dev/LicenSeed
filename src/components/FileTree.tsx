@@ -1,9 +1,9 @@
 import { Icon } from "@iconify/react";
 import { HStack, styled as p, VStack } from "panda/jsx";
-import { useEffect, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 import { type NodeApi, type NodeRendererProps, Tree } from "react-arborist";
 import { getIconUrlByName, getIconUrlForFilePath } from "vscode-material-icons";
-import { processFileEntries } from "@/lib/utils/file";
+import { fileEntry2fileTreeData } from "@/lib/utils/file";
 import { type FileEntry } from "@/types/bindings";
 import { type FileTreeData } from "@/types/file";
 
@@ -54,14 +54,11 @@ export function FileTree({
 }: {
   fileEntries: FileEntry[];
 }): ReactElement {
-  const [treeData, setTreeData] = useState<FileTreeData[]>([]);
+  const treeData = useMemo(
+    () => fileEntry2fileTreeData(fileEntries),
+    [fileEntries],
+  );
   const [activatedNode, setActivatedNode] = useState<NodeApi<FileTreeData>>();
-
-  useEffect(() => {
-    void processFileEntries(fileEntries).then((e) => {
-      setTreeData(e);
-    });
-  }, [fileEntries]);
 
   useEffect(() => {
     if (activatedNode == null) return;

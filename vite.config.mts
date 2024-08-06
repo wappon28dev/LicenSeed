@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import react from "@vitejs/plugin-react";
 import paths from "vite-tsconfig-paths";
@@ -19,7 +18,6 @@ export default defineConfig(async () => ({
         },
       ],
     }),
-    nodePolyfills(),
   ],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
