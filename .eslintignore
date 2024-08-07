@@ -2,3 +2,4 @@ vite.config.mts
 panda.config.ts
 src/vite-env.d.ts
 src/types/bindings.ts
+src-tauri/

@@ -1,3 +1,4 @@
+use log::{debug, error, info};
 use std::{fs, io, path, time};
 
 use serde::Serialize;
@@ -47,6 +48,8 @@ fn read_directory(
     current_path: &path::Path,
     depth: usize,
 ) -> io::Result<Vec<FileEntry>> {
+    debug!("-> Reading directory: {:?}", current_path);
+
     fs::read_dir(current_path)?
         .map(|entry_result| {
             let entry = entry_result?;
@@ -79,21 +82,26 @@ fn read_directory(
 #[tauri::command]
 #[specta::specta]
 pub fn collect_file_entries(input: String) -> Result<Vec<FileEntry>, String> {
-    let target_path = path::Path::new(&input);
-    println!("Reading files from: {:?}", target_path);
+    info!("Reading directory: {}", input);
 
-    return read_directory(target_path, target_path, 0)
-        .map_err(|e| format!("Failed to read directory: {}", e));
+    let target_path = path::Path::new(&input);
+    return read_directory(target_path, target_path, 0).map_err(|e| {
+        error!("Failed to read directory: {}", e);
+        format!("Failed to read directory: {}", e)
+    });
 }
 
 #[tauri::command]
 #[specta::specta]
 pub fn get_fs_metadata(input: String) -> Result<FsMetaData, String> {
+    info!("Reading metadata from: {}", input);
+
     let target_path = path::Path::new(&input);
-    println!("Reading metadata from: {:?}", target_path);
+    let metadata = fs::metadata(target_path).map_err(|e| {
+        error!("Failed to read metadata: {}", e);
+        return format!("Failed to read metadata: {}", e);
+    })?;
 
-    let metadata =
-        fs::metadata(target_path).map_err(|e| format!("Failed to read metadata: {}", e))?;
-
-    return Ok(FsMetaData::from(metadata));
+    debug!("Metadata: {:?}", metadata);
+    return Ok(metadata.into());
 }
