@@ -8,7 +8,7 @@ import { Resplit } from "react-resplit";
 import { CopyWrapper } from "@/components/CopyWrapper";
 import { FileTree } from "@/components/FileTree";
 import { Splitter } from "@/components/Splitter";
-import { useDragAndDrop } from "@/hooks/drag-and-drop";
+import { useFileSelection } from "@/hooks/file-selection";
 
 function Main(): ReactElement {
   const Card = p("div", {
@@ -133,7 +133,7 @@ function Main(): ReactElement {
 }
 
 export default function Page(): ReactElement {
-  const { fileEntries, basePath } = useDragAndDrop();
+  const { fileEntries, basePath } = useFileSelection();
 
   return (
     <p.div display="flex" h="100%" w="100%">
@@ -166,7 +166,11 @@ export default function Page(): ReactElement {
               w="100%"
             >
               {basePath != null && (
-                <FileTree basePath={basePath} fileEntries={fileEntries} />
+                <FileTree
+                  basePath={basePath}
+                  fileEntries={fileEntries}
+                  patterns={[]}
+                />
               )}
             </p.div>
             <p.div h="50%" w="100%">

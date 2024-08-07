@@ -96,9 +96,11 @@ function Controller<T>({ treeApi }: { treeApi: TreeApi<T> }): ReactElement {
 export function FileTree({
   basePath,
   fileEntries,
+  patterns,
 }: {
   basePath: string;
   fileEntries: FileEntry[];
+  patterns: string[];
 }): ReactElement {
   type T = FileTreeData;
 
@@ -108,7 +110,6 @@ export function FileTree({
     () => fileEntry2fileTreeData(fileEntries, basePath),
     [fileEntries],
   );
-  const [patterns, setPatterns] = useState<string[]>([]);
   const [activatedNode, setActivatedNode] = useState<NodeApi<T>>();
 
   const treeRef = useRef() as ComponentProps<typeof Tree<T>>["ref"];
@@ -140,19 +141,8 @@ export function FileTree({
 
   return (
     <VStack h="100%" w="100%">
-      <p.input
-        bg="blue.100"
-        fontFamily="mono"
-        onChange={(e) => {
-          setPatterns([e.target.value]);
-        }}
-        p="1"
-        type="text"
-        value={patterns}
-        w="100%"
-      />
       {treeApi != null && <Controller treeApi={treeApi} />}
-      <p.div ref={ref} h="100%" w="100%">
+      <p.div ref={ref} h="95%" w="100%">
         <Tree
           ref={treeRef}
           data={treeData}

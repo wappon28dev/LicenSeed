@@ -1,4 +1,4 @@
-use std::{fs, io, path};
+use std::{fs, io, path, time};
 
 use serde::Serialize;
 use specta::Type;
@@ -10,6 +10,36 @@ pub struct FileEntry {
     pub name: String,
     pub is_dir: bool,
     pub children: Option<Vec<FileEntry>>,
+}
+
+#[derive(Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct FsMetaData {
+    is_dir: bool,
+    is_file: bool,
+    len: i32,
+    readonly: bool,
+    modified: Option<i32>,
+    created: Option<i32>,
+}
+
+fn system_time_to_unix_time(time: time::SystemTime) -> Option<i32> {
+    time.duration_since(time::UNIX_EPOCH)
+        .ok()
+        .map(|d| d.as_secs() as i32)
+}
+
+impl From<fs::Metadata> for FsMetaData {
+    fn from(metadata: fs::Metadata) -> Self {
+        FsMetaData {
+            is_dir: metadata.is_dir(),
+            is_file: metadata.is_file(),
+            len: metadata.len() as i32,
+            readonly: metadata.permissions().readonly(),
+            modified: metadata.modified().ok().and_then(system_time_to_unix_time),
+            created: metadata.created().ok().and_then(system_time_to_unix_time),
+        }
+    }
 }
 
 fn read_directory(
@@ -48,10 +78,22 @@ fn read_directory(
 
 #[tauri::command]
 #[specta::specta]
-pub fn show_files(input: String) -> Result<Vec<FileEntry>, String> {
+pub fn collect_file_entries(input: String) -> Result<Vec<FileEntry>, String> {
     let target_path = path::Path::new(&input);
     println!("Reading files from: {:?}", target_path);
 
     return read_directory(target_path, target_path, 0)
         .map_err(|e| format!("Failed to read directory: {}", e));
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_fs_metadata(input: String) -> Result<FsMetaData, String> {
+    let target_path = path::Path::new(&input);
+    println!("Reading metadata from: {:?}", target_path);
+
+    let metadata =
+        fs::metadata(target_path).map_err(|e| format!("Failed to read metadata: {}", e))?;
+
+    return Ok(FsMetaData::from(metadata));
 }
