@@ -1,6 +1,7 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { normalize } from "pathe";
 import { useEffect, useState } from "react";
+import { match } from "ts-pattern";
 import { api } from "@/lib/services/api";
 import { type FileEntry } from "@/types/bindings";
 
@@ -16,12 +17,20 @@ export function useDragAndDrop() {
       }
 
       const path = event.payload.paths.at(0);
-      if (path == null) throw new Error("`path[0]` is null!");
+      if (path == null) {
+        throw new Error("`path[0]` is null!");
+      }
 
       const normalizedPath = normalize(path);
       setBasePath(normalizedPath);
-      void api.showFiles(normalizedPath).then((result) => {
-        setFileEntries(result);
+      void api.showFiles(normalizedPath).then((r) => {
+        match(r)
+          .with({ status: "ok" }, ({ data }) => {
+            setFileEntries(data);
+          })
+          .otherwise(({ error }) => {
+            throw new Error(error);
+          });
       });
     });
 

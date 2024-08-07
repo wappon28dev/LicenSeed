@@ -1,6 +1,7 @@
 import naturalCompare from "natural-compare-lite";
 import outmatch from "outmatch";
 import { join, normalize } from "pathe";
+import { match, P } from "ts-pattern";
 import { type FileEntry } from "@/types/bindings";
 import { type FileTreeData } from "@/types/file";
 
@@ -24,8 +25,9 @@ export function fileEntry2fileTreeData(
     ...f,
     id: join(basePath, normalize(f.relativePath)),
     relativePath: normalize(f.relativePath),
-    children:
-      f.children != null ? fileEntry2fileTreeData(f.children, basePath) : null,
+    children: match(f.children)
+      .with(P.nonNullable, (c) => fileEntry2fileTreeData(c, basePath))
+      .otherwise(() => null),
   }));
 }
 

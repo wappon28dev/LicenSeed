@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{fs, io, path};
 
 use serde::Serialize;
 use specta::Type;
@@ -12,23 +12,31 @@ pub struct FileEntry {
     pub children: Option<Vec<FileEntry>>,
 }
 
-fn read_directory(base_path: &Path, current_path: &Path, depth: usize) -> Vec<FileEntry> {
-    std::fs::read_dir(current_path)
-        .unwrap()
-        .filter_map(|entry| {
-            let entry = entry.ok()?;
+fn read_directory(
+    base_path: &path::Path,
+    current_path: &path::Path,
+    depth: usize,
+) -> io::Result<Vec<FileEntry>> {
+    fs::read_dir(current_path)?
+        .map(|entry_result| {
+            let entry = entry_result?;
             let path = entry.path();
             let is_dir = path.is_dir();
-            let name = entry.file_name().into_string().ok()?;
-            let relative_path = path.strip_prefix(base_path).ok()?.to_str()?.to_string();
+            let name = entry.file_name().into_string().unwrap_or_default();
+            let relative_path = path
+                .strip_prefix(base_path)
+                .unwrap_or(&path)
+                .to_str()
+                .unwrap_or("")
+                .to_string();
 
             let children = if is_dir && depth < 3 {
-                Some(read_directory(base_path, &path, depth + 1))
+                Some(read_directory(base_path, &path, depth + 1)?)
             } else {
                 None
             };
 
-            Some(FileEntry {
+            Ok(FileEntry {
                 relative_path,
                 name,
                 is_dir,
@@ -40,9 +48,10 @@ fn read_directory(base_path: &Path, current_path: &Path, depth: usize) -> Vec<Fi
 
 #[tauri::command]
 #[specta::specta]
-pub fn show_files(input: String) -> Vec<FileEntry> {
-    let target_path = Path::new(&input);
+pub fn show_files(input: String) -> Result<Vec<FileEntry>, String> {
+    let target_path = path::Path::new(&input);
     println!("Reading files from: {:?}", target_path);
 
-    read_directory(target_path, target_path, 0)
+    return read_directory(target_path, target_path, 0)
+        .map_err(|e| format!("Failed to read directory: {}", e));
 }
