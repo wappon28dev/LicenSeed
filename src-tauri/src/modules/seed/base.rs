@@ -68,6 +68,11 @@ pub fn get_seed_base(handle: tauri::AppHandle, id: String) -> Result<SeedBase, G
         };
     })?;
 
+    // NOTE:
+    // ここを型推論に任せた状態で `return seed_base` としてはならない.  `return Ok(seed_base)` とするべきである.
+    // `return seed_base` とすると, `seed_base` は `Result<SeedBase, GetSeedBaseErrors>` として推論される.
+    // このとき, `from_reader` がエラーを起こすと `map_err` によって `GetSeedBaseErrors` に変換される.
+    // つまり, エラーメッセージが YAML として Deserialize されてしまう.
     let seed_base = serde_yml::from_reader(file).map_err(|e| {
         error!("Failed to read seed file: {}", e);
         return GetSeedBaseErrors::ReadingError {
@@ -76,26 +81,8 @@ pub fn get_seed_base(handle: tauri::AppHandle, id: String) -> Result<SeedBase, G
     })?;
 
     debug!("-> Seed base: {:?}", seed_base);
-    return seed_base;
-}
 
-#[tauri::command]
-#[specta::specta]
-pub fn write_seed_base(handle: tauri::AppHandle, seed_base: SeedBase) -> Result<(), String> {
-    info!("Writing seed base: {:?}", seed_base);
-
-    let file = fs::File::create("hoge.yml").map_err(|e| {
-        error!("Failed to create file: {}", e);
-        return e.to_string();
-    })?;
-
-    serde_yml::to_writer(file, &seed_base).map_err(|e| {
-        error!("Failed to write seed file: {}", e);
-        return e.to_string();
-    })?;
-
-    info!("Seed file written successfully");
-    return Ok(());
+    return Ok(seed_base);
 }
 
 #[tauri::command]
@@ -165,4 +152,23 @@ pub fn collect_seed_bases(
     }
 
     return Ok(seed_bases);
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn write_seed_base(handle: tauri::AppHandle, seed_base: SeedBase) -> Result<(), String> {
+    info!("Writing seed base: {:?}", seed_base);
+
+    let file = fs::File::create("hoge.yml").map_err(|e| {
+        error!("Failed to create file: {}", e);
+        return e.to_string();
+    })?;
+
+    serde_yml::to_writer(file, &seed_base).map_err(|e| {
+        error!("Failed to write seed file: {}", e);
+        return e.to_string();
+    })?;
+
+    info!("Seed file written successfully");
+    return Ok(());
 }

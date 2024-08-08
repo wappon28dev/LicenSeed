@@ -40,6 +40,26 @@ pub struct SeedFile {
 
 #[tauri::command]
 #[specta::specta]
+pub fn read_seed_def(target_path: &str) -> Result<SeedFile, String> {
+    info!("Reading seed file from {}", target_path);
+
+    let file = fs::File::open(target_path).map_err(|e| {
+        error!("Failed to open file: {}", e);
+        return e.to_string();
+    })?;
+
+    let seed_file = serde_yml::from_reader(file).map_err(|e| {
+        error!("Failed to read seed file: {}", e);
+        return e.to_string();
+    })?;
+
+    info!("Seed file read successfully");
+    debug!("-> Seed file: {:?}", seed_file);
+    return Ok(seed_file);
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn write_seed_def(target_path: &str, seed_file: SeedFile) -> Result<(), String> {
     info!("Writing seed file to {}", target_path);
     debug!("-> Seed file: {:?}", seed_file);
@@ -56,24 +76,4 @@ pub fn write_seed_def(target_path: &str, seed_file: SeedFile) -> Result<(), Stri
 
     info!("Seed file written successfully");
     return Ok(());
-}
-
-#[tauri::command]
-#[specta::specta]
-pub fn read_seed_def(target_path: &str) -> Result<SeedFile, String> {
-    info!("Reading seed file from {}", target_path);
-
-    let file = fs::File::open(target_path).map_err(|e| {
-        error!("Failed to open file: {}", e);
-        return e.to_string();
-    })?;
-
-    let seed_file = serde_yml::from_reader(file).map_err(|e| {
-        error!("Failed to read seed file: {}", e);
-        return e.to_string();
-    })?;
-
-    info!("Seed file read successfully");
-    debug!("-> Seed file: {:?}", seed_file);
-    return seed_file;
 }

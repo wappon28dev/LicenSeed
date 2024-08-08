@@ -50,7 +50,7 @@ export default function Page(): ReactElement {
               // );
 
               // match(
-              //   await api.writeSeedDef("hoge.md", {
+              //   await api.writeSeedDef("hoge.yml", {
               //     seeds: [],
               //     licenseHash: "",
               //     version: "2",
