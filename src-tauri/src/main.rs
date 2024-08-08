@@ -4,6 +4,7 @@
 mod modules;
 
 use modules::files::{collect_file_entries, get_fs_metadata};
+use modules::resource::resolve_resources_path;
 use modules::seed::{read_seed_file, write_seed_file};
 use std::env;
 
@@ -18,7 +19,8 @@ fn main() {
         collect_file_entries,
         get_fs_metadata,
         write_seed_file,
-        read_seed_file
+        read_seed_file,
+        resolve_resources_path
     ]);
 
     #[cfg(debug_assertions)]
