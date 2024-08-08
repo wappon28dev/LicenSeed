@@ -19,27 +19,59 @@ export default function Page(): ReactElement {
           onClick={() => {
             console.log("次へ");
             void (async () => {
-              const path = match(await api.resolveResourcesPath("hoge.md"))
-                .with({ status: "ok" }, ({ data }) => data)
-                .otherwise(({ error }) => {
-                  throw new Error("リソースパスの解決に失敗しました.", {
-                    cause: error,
-                  });
-                });
+              // const base = match(await api.getSeedBase("@prg/MIT"))
+              //   .with({ status: "ok" }, ({ data }) => data)
+              //   .with({ status: "error", error: { type: "NOT_FOUND" } }, () => {
+              //     throw new Error("SeedBase not found");
+              //   })
+              //   .with({ error: { type: "READING_ERROR" } }, ({ error }) => {
+              //     throw new Error(`SeedBase reading error: ${error.error}`);
+              //   });
+              // console.log(base);
 
-              match(
-                await api.writeSeedFile(path, {
-                  version: "1.0.0",
-                  seeds: [],
-                  licenseHash: "hoge",
-                }),
-              )
-                .with({ status: "ok" }, () => {})
-                .otherwise(({ error }) => {
-                  throw new Error("シードファイルの書き込みに失敗しました.", {
-                    cause: error,
-                  });
+              // match(
+              //   await api.writeSeedBase({
+              //     id: "Apache2",
+              //     description: "Apache2",
+              //     summary: {
+              //       conditions: "asdf",
+              //       permissions: "asdf",
+              //       limitations: "asdf",
+              //     },
+              //     variables: [
+              //       {
+              //         key: "Apache2",
+              //         description: "Apache2",
+              //         value: "Apache2",
+              //       },
+              //     ],
+              //     body: "Apache2",
+              //   }),
+              // );
+
+              // match(
+              //   await api.writeSeedDef("hoge.md", {
+              //     seeds: [],
+              //     licenseHash: "",
+              //     version: "2",
+              //   }),
+              // )
+              //   .with({ status: "ok" }, ({ data }) => {
+              //     console.log(data);
+              //   })
+              //   .otherwise(({ error }) => {
+              //     console.log(error);
+              //   });
+
+              const baseSeeds = match(await api.collectSeedBases())
+                .with({ status: "ok" }, ({ data }) => data)
+                .with({ status: "error", error: { type: "NOT_FOUND" } }, () => {
+                  throw new Error("SeedBase not found");
+                })
+                .with({ error: { type: "READING_ERROR" } }, ({ error }) => {
+                  throw new Error(`SeedBase reading error: ${error.error}`);
                 });
+              console.log(baseSeeds);
             })();
           }}
         >

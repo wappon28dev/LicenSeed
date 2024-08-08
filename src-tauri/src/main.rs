@@ -4,8 +4,8 @@
 mod modules;
 
 use modules::files::{collect_file_entries, get_fs_metadata};
-use modules::resource::resolve_resources_path;
-use modules::seed::{read_seed_file, write_seed_file};
+use modules::seed::base::{collect_seed_bases, get_seed_base, write_seed_base};
+use modules::seed::def::{read_seed_def, write_seed_def};
 use std::env;
 
 use specta_typescript::Typescript;
@@ -18,9 +18,11 @@ fn main() {
     let builder = Builder::<tauri::Wry>::new().commands(collect_commands![
         collect_file_entries,
         get_fs_metadata,
-        write_seed_file,
-        read_seed_file,
-        resolve_resources_path
+        write_seed_def,
+        read_seed_def,
+        write_seed_base,
+        get_seed_base,
+        collect_seed_bases
     ]);
 
     #[cfg(debug_assertions)]
