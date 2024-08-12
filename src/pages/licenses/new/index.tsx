@@ -63,15 +63,20 @@ export default function Page(): ReactElement {
               //     console.log(error);
               //   });
 
-              const baseSeeds = match(await api.collectSeedBases())
-                .with({ status: "ok" }, ({ data }) => data)
-                .with({ status: "error", error: { type: "NOT_FOUND" } }, () => {
-                  throw new Error("SeedBase not found");
-                })
-                .with({ error: { type: "READING_ERROR" } }, ({ error }) => {
-                  throw new Error(`SeedBase reading error: ${error.error}`);
-                });
-              console.log(baseSeeds);
+              // const baseSeeds = match(await api.collectSeedBases())
+              //   .with({ status: "ok" }, ({ data }) => data)
+              //   .with({ status: "error", error: { type: "NOT_FOUND" } }, () => {
+              //     throw new Error("SeedBase not found");
+              //   })
+              //   .with({ error: { type: "READING_ERROR" } }, ({ error }) => {
+              //     throw new Error(`SeedBase reading error: ${error.error}`);
+              //   });
+              // console.log(baseSeeds);
+
+              const seedBaseGroupManifest = match(
+                await api.collectSeedBaseGroups(),
+              ).with({ status: "ok" }, ({ data }) => data);
+              console.log(seedBaseGroupManifest);
             })();
           }}
         >

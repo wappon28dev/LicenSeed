@@ -8,13 +8,26 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use super::common::Summary;
-use crate::modules::resource::resolve_resources_path;
+use crate::modules::resource::resolve_res_path;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 struct Variable {
     key: String,
     description: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+struct TermEntry {
+    description: String,
+    label: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+struct Terms {
+    permissions: HashMap<String, TermEntry>,
+    conditions: HashMap<String, TermEntry>,
+    limitations: HashMap<String, TermEntry>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -25,6 +38,20 @@ pub struct SeedBase {
     summary: Summary,
     variables: Vec<Variable>,
     body: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+pub struct SeedBaseGroupManifest {
+    group: String,
+    name: String,
+    description: String,
+    terms: Terms,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+pub struct SeedBaseGroup {
+    manifest: SeedBaseGroupManifest,
+    bases: Vec<SeedBase>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -46,11 +73,11 @@ fn handle_asset_error(e: tauri::Error) -> GetSeedBaseErrors {
     }
 }
 
-fn get_seed_base_res_path(handle: tauri::AppHandle, id: String) -> tauri::Result<PathBuf> {
+fn get_seed_base_path(handle: tauri::AppHandle, id: String) -> tauri::Result<PathBuf> {
     let file_name = format!("{}.yml", id);
     let path_buf = path::Path::new("seeds").join("bases").join(file_name);
 
-    resolve_resources_path(handle, path_buf)
+    resolve_res_path(handle, path_buf)
 }
 
 #[tauri::command]
@@ -58,7 +85,7 @@ fn get_seed_base_res_path(handle: tauri::AppHandle, id: String) -> tauri::Result
 pub fn get_seed_base(handle: tauri::AppHandle, id: String) -> Result<SeedBase, GetSeedBaseErrors> {
     info!("Getting seed base: {}", id);
 
-    let res_path = get_seed_base_res_path(handle, id).map_err(handle_asset_error)?;
+    let res_path = get_seed_base_path(handle, id).map_err(handle_asset_error)?;
     debug!("-> Resolved path: {:?}", res_path);
 
     let file = fs::File::open(res_path).map_err(|e| {
@@ -87,74 +114,110 @@ pub fn get_seed_base(handle: tauri::AppHandle, id: String) -> Result<SeedBase, G
 
 #[tauri::command]
 #[specta::specta]
-pub fn collect_seed_bases(
+pub fn collect_seed_base_manifests(
     handle: tauri::AppHandle,
-) -> Result<HashMap<String, Vec<SeedBase>>, GetSeedBaseErrors> {
-    let base_path_buf =
-        resolve_resources_path(handle.clone(), path::Path::new("seeds").join("bases"))
-            .map_err(handle_asset_error)?;
+) -> Result<Vec<SeedBaseGroupManifest>, GetSeedBaseErrors> {
+    info!("Collecting seed base manifests");
 
-    let groups: Vec<String> = fs::read_dir(base_path_buf.clone())
-        .map_err(|e| {
-            error!("Failed to read directory: {}", e);
-            GetSeedBaseErrors::ReadingError {
-                error: e.to_string(),
-            }
-        })?
-        .filter_map(|entry| {
-            let path = entry.unwrap().path(); // FIXME: handle error
-            let name = path.file_name().unwrap().to_str().unwrap().to_string();
+    let glob_cwd = resolve_res_path(handle, path::Path::new("seeds").to_path_buf())
+        .map_err(handle_asset_error)?;
+    let files = globmatch::Builder::new("bases/**/_manifest.yml")
+        .build(glob_cwd)
+        .unwrap()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
 
-            if path.is_dir() && !name.starts_with('_') {
-                Some(name.to_string())
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    debug!("-> Groups: {:?}", &groups);
-    debug!("-> Base path: {:?}", base_path_buf);
-
-    let mut seed_bases: HashMap<String, Vec<SeedBase>> = HashMap::new();
-
-    for group in &groups {
-        let entries = fs::read_dir(path::Path::join(&base_path_buf, group))
-            .map_err(|e| {
-                error!("Failed to read directory: {}", e);
+    let groups = files
+        .iter()
+        .map(|f| {
+            let file = fs::File::open(f).map_err(|e| {
+                error!("Failed to open file: {}", e);
                 GetSeedBaseErrors::ReadingError {
                     error: e.to_string(),
                 }
-            })?
-            .filter(|e| {
-                let path = e.as_ref().unwrap().path();
-                let name = path.file_name().unwrap().to_str().unwrap();
+            })?;
 
-                !name.starts_with('_')
-            })
+            let manifest = serde_yml::from_reader(file).map_err(|e| {
+                error!("Failed to read seed file: {}", e);
+                GetSeedBaseErrors::ReadingError {
+                    error: e.to_string(),
+                }
+            })?;
+
+            Ok(manifest)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
+    debug!("-> Groups: {:?}", &groups);
+
+    Ok(groups)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn collect_seed_base_groups(
+    handle: tauri::AppHandle,
+) -> Result<HashMap<String, SeedBaseGroup>, GetSeedBaseErrors> {
+    info!("Collecting seed bases");
+
+    let manifests = collect_seed_base_manifests(handle.clone())?;
+    let mut groups: HashMap<String, SeedBaseGroup> = HashMap::new();
+
+    for manifest in &manifests {
+        let group = &manifest.group;
+        let glob_cwd = resolve_res_path(
+            handle.clone(),
+            path::Path::new("seeds").join("bases").join(group),
+        )
+        .map_err(handle_asset_error)?;
+        let files = globmatch::Builder::new("*.yml")
+            .build(glob_cwd)
+            .unwrap()
+            .into_iter()
+            .flatten()
             .collect::<Vec<_>>();
 
-        let mut bases: Vec<SeedBase> = Vec::new();
-        for entry in &entries {
-            let entry = entry.as_ref().unwrap(); // FIXME: handle error
-            let path = entry.path();
-
-            let id = path
-                .strip_prefix(&base_path_buf)
+        let entries = files.iter().filter(|f| {
+            !f.components()
+                .last()
                 .unwrap()
+                .as_os_str()
+                .to_str()
+                .unwrap()
+                .starts_with('_')
+        });
+
+        let mut bases: Vec<SeedBase> = Vec::new();
+        for entry in entries {
+            let name: String = entry
+                .components()
+                .last()
+                .unwrap()
+                .as_os_str()
                 .to_str()
                 .unwrap()
                 .strip_suffix(".yml")
                 .unwrap()
                 .to_string();
+            let id = format!("{}/{}", group, name);
+            let base = get_seed_base(handle.clone(), id)?;
 
-            let base = get_seed_base(handle.clone(), id.clone())?;
             bases.push(base);
         }
-        seed_bases.insert(group.clone(), bases);
+
+        groups.insert(
+            group.to_string(),
+            SeedBaseGroup {
+                manifest: manifest.clone(),
+                bases,
+            },
+        );
     }
 
-    Ok(seed_bases)
+    debug!("-> Groups: {:?}", &groups);
+
+    Ok(groups)
 }
 
 #[tauri::command]

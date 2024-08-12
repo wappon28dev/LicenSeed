@@ -4,7 +4,9 @@
 mod modules;
 
 use modules::files::{collect_file_entries, get_fs_metadata};
-use modules::seed::base::{collect_seed_bases, get_seed_base, write_seed_base};
+use modules::seed::base::{
+    collect_seed_base_groups, collect_seed_base_manifests, get_seed_base, write_seed_base,
+};
 use modules::seed::def::{read_seed_def, write_seed_def};
 use std::env;
 
@@ -22,7 +24,8 @@ fn main() {
         read_seed_def,
         write_seed_base,
         get_seed_base,
-        collect_seed_bases
+        collect_seed_base_groups,
+        collect_seed_base_manifests
     ]);
 
     #[cfg(debug_assertions)]
