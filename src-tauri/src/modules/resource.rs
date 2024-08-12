@@ -15,7 +15,7 @@ pub fn resolve_resources_path(
         .resolve(relative_path, BaseDirectory::Resource)?;
 
     if resolved_path.exists() {
-        return Ok(resolved_path.clone());
+        Ok(resolved_path.clone())
     } else {
         return Err(tauri::Error::AssetNotFound(path_buf.display().to_string()));
     }

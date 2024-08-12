@@ -15,12 +15,12 @@ use std::collections::HashMap;
 struct Variable {
     key: String,
     description: String,
-    value: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct SeedBase {
     id: String,
+    name: String,
     description: String,
     summary: Summary,
     variables: Vec<Variable>,
@@ -38,17 +38,17 @@ pub enum GetSeedBaseErrors {
 fn handle_asset_error(e: tauri::Error) -> GetSeedBaseErrors {
     error!("Failed to get seed base: {}", e);
 
-    return match e {
+    match e {
         tauri::Error::AssetNotFound(_) => GetSeedBaseErrors::NotFound,
         _ => GetSeedBaseErrors::ReadingError {
             error: e.to_string(),
         },
-    };
+    }
 }
 
 fn get_seed_base_res_path(handle: tauri::AppHandle, id: String) -> tauri::Result<PathBuf> {
     let file_name = format!("{}.yml", id);
-    let path_buf = path::Path::new("seeds").join("base").join(file_name);
+    let path_buf = path::Path::new("seeds").join("bases").join(file_name);
 
     resolve_resources_path(handle, path_buf)
 }
@@ -63,9 +63,9 @@ pub fn get_seed_base(handle: tauri::AppHandle, id: String) -> Result<SeedBase, G
 
     let file = fs::File::open(res_path).map_err(|e| {
         error!("Failed to open file: {}", e);
-        return GetSeedBaseErrors::ReadingError {
+        GetSeedBaseErrors::ReadingError {
             error: e.to_string(),
-        };
+        }
     })?;
 
     // NOTE:
@@ -75,14 +75,14 @@ pub fn get_seed_base(handle: tauri::AppHandle, id: String) -> Result<SeedBase, G
     // つまり, エラーメッセージが YAML として Deserialize されてしまう.
     let seed_base = serde_yml::from_reader(file).map_err(|e| {
         error!("Failed to read seed file: {}", e);
-        return GetSeedBaseErrors::ReadingError {
+        GetSeedBaseErrors::ReadingError {
             error: e.to_string(),
-        };
+        }
     })?;
 
     debug!("-> Seed base: {:?}", seed_base);
 
-    return Ok(seed_base);
+    Ok(seed_base)
 }
 
 #[tauri::command]
@@ -91,34 +91,30 @@ pub fn collect_seed_bases(
     handle: tauri::AppHandle,
 ) -> Result<HashMap<String, Vec<SeedBase>>, GetSeedBaseErrors> {
     let base_path_buf =
-        resolve_resources_path(handle.clone(), path::Path::new("seeds").join("base"))
+        resolve_resources_path(handle.clone(), path::Path::new("seeds").join("bases"))
             .map_err(handle_asset_error)?;
 
     let groups: Vec<String> = fs::read_dir(base_path_buf.clone())
         .map_err(|e| {
             error!("Failed to read directory: {}", e);
-            return GetSeedBaseErrors::ReadingError {
+            GetSeedBaseErrors::ReadingError {
                 error: e.to_string(),
-            };
+            }
         })?
         .filter_map(|entry| {
             let path = entry.unwrap().path(); // FIXME: handle error
             let name = path.file_name().unwrap().to_str().unwrap().to_string();
 
-            if path.is_dir() {
-                return Some(name.to_string());
+            if path.is_dir() && !name.starts_with('_') {
+                Some(name.to_string())
             } else {
-                return None;
+                None
             }
         })
         .collect();
 
     debug!("-> Groups: {:?}", &groups);
     debug!("-> Base path: {:?}", base_path_buf);
-    debug!(
-        "-> {:?}",
-        base_path_buf.clone().join("**/*.yml").to_str().unwrap()
-    );
 
     let mut seed_bases: HashMap<String, Vec<SeedBase>> = HashMap::new();
 
@@ -126,16 +122,23 @@ pub fn collect_seed_bases(
         let entries = fs::read_dir(path::Path::join(&base_path_buf, group))
             .map_err(|e| {
                 error!("Failed to read directory: {}", e);
-                return GetSeedBaseErrors::ReadingError {
+                GetSeedBaseErrors::ReadingError {
                     error: e.to_string(),
-                };
+                }
             })?
+            .filter(|e| {
+                let path = e.as_ref().unwrap().path();
+                let name = path.file_name().unwrap().to_str().unwrap();
+
+                !name.starts_with('_')
+            })
             .collect::<Vec<_>>();
 
         let mut bases: Vec<SeedBase> = Vec::new();
         for entry in &entries {
             let entry = entry.as_ref().unwrap(); // FIXME: handle error
             let path = entry.path();
+
             let id = path
                 .strip_prefix(&base_path_buf)
                 .unwrap()
@@ -151,24 +154,24 @@ pub fn collect_seed_bases(
         seed_bases.insert(group.clone(), bases);
     }
 
-    return Ok(seed_bases);
+    Ok(seed_bases)
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn write_seed_base(handle: tauri::AppHandle, seed_base: SeedBase) -> Result<(), String> {
+pub fn write_seed_base(_handle: tauri::AppHandle, seed_base: SeedBase) -> Result<(), String> {
     info!("Writing seed base: {:?}", seed_base);
 
     let file = fs::File::create("hoge.yml").map_err(|e| {
         error!("Failed to create file: {}", e);
-        return e.to_string();
+        e.to_string()
     })?;
 
     serde_yml::to_writer(file, &seed_base).map_err(|e| {
         error!("Failed to write seed file: {}", e);
-        return e.to_string();
+        e.to_string()
     })?;
 
     info!("Seed file written successfully");
-    return Ok(());
+    Ok(())
 }

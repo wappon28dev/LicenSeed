@@ -1,0 +1,3 @@
+[submodule "src-tauri/resources/seeds"]
+	path = src-tauri/resources/seeds
+	url = https://github.com/wappon28dev/LicenSeed-bases

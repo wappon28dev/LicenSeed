@@ -85,10 +85,10 @@ pub fn collect_file_entries(input: String) -> Result<Vec<FileEntry>, String> {
     info!("Reading directory: {}", input);
 
     let target_path = path::Path::new(&input);
-    return read_directory(target_path, target_path, 0).map_err(|e| {
+    read_directory(target_path, target_path, 0).map_err(|e| {
         error!("Failed to read directory: {}", e);
-        return e.to_string();
-    });
+        e.to_string()
+    })
 }
 
 #[tauri::command]
@@ -99,9 +99,9 @@ pub fn get_fs_metadata(input: String) -> Result<FsMetaData, String> {
     let target_path = path::Path::new(&input);
     let metadata = fs::metadata(target_path).map_err(|e| {
         error!("Failed to read metadata: {}", e);
-        return e.to_string();
+        e.to_string()
     })?;
 
     debug!("Metadata: {:?}", metadata);
-    return Ok(metadata.into());
+    Ok(metadata.into())
 }

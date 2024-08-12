@@ -32,7 +32,7 @@ struct SeedDef {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
-pub struct SeedFile {
+pub struct SeedDefFile {
     version: String,
     seeds: Vec<SeedDef>,
     license_hash: String,
@@ -40,40 +40,40 @@ pub struct SeedFile {
 
 #[tauri::command]
 #[specta::specta]
-pub fn read_seed_def(target_path: &str) -> Result<SeedFile, String> {
+pub fn read_seed_def(target_path: &str) -> Result<SeedDefFile, String> {
     info!("Reading seed file from {}", target_path);
 
     let file = fs::File::open(target_path).map_err(|e| {
         error!("Failed to open file: {}", e);
-        return e.to_string();
+        e.to_string()
     })?;
 
     let seed_file = serde_yml::from_reader(file).map_err(|e| {
         error!("Failed to read seed file: {}", e);
-        return e.to_string();
+        e.to_string()
     })?;
 
     info!("Seed file read successfully");
     debug!("-> Seed file: {:?}", seed_file);
-    return Ok(seed_file);
+    Ok(seed_file)
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn write_seed_def(target_path: &str, seed_file: SeedFile) -> Result<(), String> {
+pub fn write_seed_def(target_path: &str, seed_file: SeedDefFile) -> Result<(), String> {
     info!("Writing seed file to {}", target_path);
     debug!("-> Seed file: {:?}", seed_file);
 
     let file = fs::File::create(target_path).map_err(|e| {
         error!("Failed to create file: {}", e);
-        return e.to_string();
+        e.to_string()
     })?;
 
     serde_yml::to_writer(file, &seed_file).map_err(|e| {
         error!("Failed to write seed file: {}", e);
-        return e.to_string();
+        e.to_string()
     })?;
 
     info!("Seed file written successfully");
-    return Ok(());
+    Ok(())
 }
