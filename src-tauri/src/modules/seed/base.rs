@@ -158,11 +158,11 @@ pub fn collect_seed_base_manifests(
 #[specta::specta]
 pub fn collect_seed_base_groups(
     handle: tauri::AppHandle,
-) -> Result<HashMap<String, SeedBaseGroup>, GetSeedBaseErrors> {
+) -> Result<Vec<SeedBaseGroup>, GetSeedBaseErrors> {
     info!("Collecting seed bases");
 
     let manifests = collect_seed_base_manifests(handle.clone())?;
-    let mut groups: HashMap<String, SeedBaseGroup> = HashMap::new();
+    let mut groups: Vec<SeedBaseGroup> = Vec::new();
 
     for manifest in &manifests {
         let group = &manifest.group;
@@ -206,13 +206,10 @@ pub fn collect_seed_base_groups(
             bases.push(base);
         }
 
-        groups.insert(
-            group.to_string(),
-            SeedBaseGroup {
-                manifest: manifest.clone(),
-                bases,
-            },
-        );
+        groups.push(SeedBaseGroup {
+            manifest: manifest.clone(),
+            bases,
+        });
     }
 
     debug!("-> Groups: {:?}", &groups);

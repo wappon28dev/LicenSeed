@@ -7,7 +7,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import { waitMs } from "@/lib/consts";
+import { waitMs } from "@/lib/utils";
 
 export function CopyWrapper({
   copyText,

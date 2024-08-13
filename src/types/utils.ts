@@ -14,5 +14,3 @@ export type ArrayElem<ArrayType extends readonly unknown[]> =
 export type OmitStrict<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type Nullable<T> = T | null | undefined;
-
-export type State<T> = [T, (value: T) => void];

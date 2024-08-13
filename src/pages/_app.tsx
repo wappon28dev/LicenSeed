@@ -1,9 +1,33 @@
-import { styled as p } from "panda/jsx";
+import { Icon } from "@iconify/react";
+import { styled as p, VStack } from "panda/jsx";
 import { type ReactElement } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useRouteError } from "react-router-dom";
 
 import "@/styles/global.css";
 import "@/styles/fonts.css";
+
+export function Catch(): ReactElement {
+  const error = useRouteError();
+
+  return (
+    <p.div
+      bg="red.50"
+      color="red.500"
+      display="grid"
+      h="100vh"
+      placeItems="center"
+      w="100%"
+    >
+      <VStack w="100%">
+        <Icon height="3em" icon="mdi:robot-dead" />
+        <p.p fontSize="1.2rem" fontWeight="bold">
+          Oops! 予期せぬエラーが発生しました.
+        </p.p>
+        <p.code>{String(error)}</p.code>
+      </VStack>
+    </p.div>
+  );
+}
 
 export default function Layout(): ReactElement {
   return (
