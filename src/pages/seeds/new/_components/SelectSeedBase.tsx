@@ -1,4 +1,5 @@
 import { Icon } from "@iconify/react";
+import { useStore } from "@nanostores/react";
 import { css } from "panda/css";
 import { styled as p, VStack } from "panda/jsx";
 import { vstack } from "panda/patterns/vstack";
@@ -12,6 +13,8 @@ import { Splitter } from "@/components/Splitter";
 import { SeedSummary } from "@/components/seed/Summary";
 import { S, T } from "@/lib/consts";
 import { api } from "@/lib/services/api";
+import { $seedDefWizard } from "@/lib/stores/seed-def";
+import { findBaseGroupAndBasesFromId } from "@/lib/utils/seed-base";
 import {
   type SeedBaseGroupManifest,
   type SeedBase,
@@ -116,16 +119,38 @@ function SeedBaseGroupSelector({
 }: {
   groups: SeedBaseGroup[];
 }): ReactElement {
-  const [selectedGroup, setSelectedGroup] = useState<SeedBaseGroup>();
-  const [selectedBase, setSelectedBase] = useState<SeedBase>();
+  const seedDefWizard = useStore($seedDefWizard);
+  if (!(seedDefWizard.type === "REUSE" || seedDefWizard.type === "FORK")) {
+    return (
+      <ErrorScreen
+        error="SeedDefWizard type is not `REUSE` or `FORK`; Not implemented yet."
+        title="ベースシードの選択"
+      />
+    );
+  }
+
+  const [selectedGroup, setSelectedGroup] = useState<Nullable<SeedBaseGroup>>(
+    findBaseGroupAndBasesFromId(groups, seedDefWizard.baseSeedId ?? "")?.group,
+  );
+  const [selectedBase, setSelectedBase] = useState<Nullable<SeedBase>>(
+    findBaseGroupAndBasesFromId(groups, seedDefWizard.baseSeedId ?? "")?.base,
+  );
   const [hoveredBase, setHoveredBase] = useState<SeedBase>();
 
-  const displayBase = hoveredBase ?? selectedBase;
+  const displayBase = selectedBase ?? hoveredBase;
 
   useEffect(() => {
     setSelectedBase(undefined);
     setHoveredBase(undefined);
   }, [selectedGroup]);
+
+  useEffect(() => {
+    if (selectedBase == null) return;
+    $seedDefWizard.set({
+      ...seedDefWizard,
+      baseSeedId: selectedBase.id,
+    });
+  }, [selectedBase]);
 
   return (
     <Resplit.Root

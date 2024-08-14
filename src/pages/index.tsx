@@ -7,7 +7,7 @@ export default function Page(): ReactElement {
     <p.div display="grid" h="100%" placeItems="center">
       <VStack>
         <p.p fontWeight="bold">Hello!</p.p>
-        <Link to="/licenses/new">
+        <Link to="/seeds/new">
           <p.button
             bg={{ base: "blue.200", _hover: "blue.100" }}
             cursor="pointer"

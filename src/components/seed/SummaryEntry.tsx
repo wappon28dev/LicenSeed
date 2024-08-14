@@ -11,7 +11,7 @@ import {
 
 function Hint({ description }: { description: string }): ReactElement {
   return (
-    <VStack bg="white" p="3" rounded="md" shadow="md">
+    <VStack bg="white" maxW="500pt" p="3" rounded="md" shadow="md">
       <HoverCard.Arrow
         className={css({
           fill: "white",
@@ -48,7 +48,7 @@ export function RenderedSummaryEntry({
     <p.li>
       <HStack alignItems="center" justifyContent="space-between">
         <p.p>{termText.label}</p.p>
-        <HoverCard.Root closeDelay={100} openDelay={300}>
+        <HoverCard.Root closeDelay={0} openDelay={0}>
           <HoverCard.Trigger asChild>
             <Icon cursor="pointer" icon="mdi:help-circle-outline" />
           </HoverCard.Trigger>

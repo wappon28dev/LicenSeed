@@ -5,7 +5,7 @@ import { components, hooks, utils } from '@generouted/react-router/client'
 
 export type Path =
   | `/`
-  | `/licenses/new`
+  | `/seeds/new`
   | `/viewer`
 
 export type Params = {

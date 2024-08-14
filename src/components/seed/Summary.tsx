@@ -1,4 +1,4 @@
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@iconify/react";
 import { styled as p, VStack } from "panda/jsx";
 import { type ReactElement } from "react";
 import { RenderedSummaryEntry } from "./SummaryEntry";
