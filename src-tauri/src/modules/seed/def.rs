@@ -16,7 +16,7 @@ struct Base {
 #[serde(tag = "type", rename_all = "SCREAMING_SNAKE_CASE")]
 #[allow(dead_code)]
 enum SeedData {
-    Custom {},
+    Custom { body: String },
     Crossbreed { ids: Vec<String> },
     Fork { base: Base, diff: String },
     Reuse { id: String },
@@ -24,6 +24,7 @@ enum SeedData {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 struct SeedDef {
+    title: String,
     sower: Sower,
     territory: Vec<String>,
     data: SeedData,

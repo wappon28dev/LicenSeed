@@ -21,7 +21,7 @@ export function Catch(): ReactElement {
       <VStack position="relative" w="100%">
         <Icon height="3em" icon="mdi:robot-dead" />
         <p.p fontSize="1.2rem" fontWeight="bold">
-          Oops! 予期せぬエラーが発生しました.
+          Oops! 予期せぬエラーが発生しました
         </p.p>
         <p.code>{String(error)}</p.code>
         <p.div

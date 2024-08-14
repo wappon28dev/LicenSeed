@@ -18,6 +18,29 @@ export default defineConfig({
           line: { value: "var(--font-line)" },
           udev: { value: "var(--font-udev)" },
         },
+        zIndex: {
+          header: { value: 10 },
+          modal: { value: 100 },
+          modalContent: { value: 110 },
+        },
+      },
+      keyframes: {
+        fadeIn: {
+          "0%": {
+            opacity: "0",
+          },
+          "100%": {
+            opacity: "1",
+          },
+        },
+        fadeOut: {
+          "0%": {
+            opacity: "1",
+          },
+          "100%": {
+            opacity: "0",
+          },
+        },
       },
     },
   },

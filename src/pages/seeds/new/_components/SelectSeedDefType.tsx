@@ -5,7 +5,7 @@ import { token } from "panda/tokens";
 import { type ReactElement } from "react";
 import { $seedDefWizard } from "@/lib/stores/seed-def";
 import { getEntries } from "@/lib/utils";
-import { type SeedDefWizard } from "@/types/seed-def";
+import { type SeedDef } from "@/types/bindings";
 
 function SeedDefTypeCard({
   icon,
@@ -76,7 +76,7 @@ const selection = {
       "自分でダイジェストとライセンス文を定義して, ライセンス文を生成します.",
   },
 } as const satisfies Record<
-  SeedDefWizard["type"],
+  SeedDef["data"]["type"],
   {
     icon: string;
     title: string;
@@ -96,17 +96,19 @@ export function SelectSeedDefType(): ReactElement {
       w="100%"
     >
       {getEntries(selection).map(([type, { icon, title, description }]) => {
-        const isSelected = type === seedDefWizard.type;
+        const isSelected = type === seedDefWizard.data?.type;
         return (
           <SeedDefTypeCard
             key={type}
             description={description}
             icon={icon}
-            isSelected={type === seedDefWizard.type}
+            isSelected={type === seedDefWizard.data?.type}
             onClick={() => {
               $seedDefWizard.set({
                 ...seedDefWizard,
-                type: isSelected ? undefined : type,
+                data: {
+                  type: isSelected ? undefined : type,
+                },
               });
             }}
             title={title}

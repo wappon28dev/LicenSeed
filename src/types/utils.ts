@@ -14,3 +14,11 @@ export type ArrayElem<ArrayType extends readonly unknown[]> =
 export type OmitStrict<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type Nullable<T> = T | null | undefined;
+
+export type PartialRecursive<T> = {
+  [P in keyof T]?: T[P] extends Array<infer U>
+    ? Array<PartialRecursive<U>>
+    : T[P] extends object | undefined
+      ? PartialRecursive<T[P]>
+      : T[P];
+};

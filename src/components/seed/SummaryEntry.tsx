@@ -53,7 +53,13 @@ export function RenderedSummaryEntry({
             <Icon cursor="pointer" icon="mdi:help-circle-outline" />
           </HoverCard.Trigger>
           <HoverCard.Portal>
-            <HoverCard.Content side="right" sideOffset={3}>
+            <HoverCard.Content
+              className={css({
+                zIndex: "modalContent",
+              })}
+              side="right"
+              sideOffset={3}
+            >
               <Hint description={termText.description} />
             </HoverCard.Content>
           </HoverCard.Portal>

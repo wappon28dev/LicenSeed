@@ -1,10 +1,8 @@
 import { Icon } from "@iconify/react";
 import { VStack, styled as p } from "panda/jsx";
-import { useState, type ReactElement } from "react";
-import { FileTree } from "@/components/FileTree";
-import { useFileSelection } from "@/hooks/file-selection";
+import { type ReactElement } from "react";
 
-function FileSelectionReady({
+export function FileSelectionReady({
   selectDir,
 }: {
   selectDir: () => Promise<void>;
@@ -34,37 +32,32 @@ function FileSelectionReady({
   );
 }
 
-export function FileSelect(): ReactElement {
-  const { fileEntries, basePath, selectDir } = useFileSelection();
-  const [patterns, setPatterns] = useState<string[]>([]);
-
+export function FilePatternsInput({
+  patterns,
+  setPatterns,
+}: {
+  patterns: string[];
+  setPatterns: (patterns: string[]) => void;
+}): ReactElement {
   return (
-    <p.div display="flex" h="100%" w="100%">
-      <p.div flex="1" h="100%" w="100%">
-        {basePath == null ? (
-          <FileSelectionReady selectDir={selectDir} />
-        ) : (
-          <FileTree
-            basePath={basePath}
-            fileEntries={fileEntries}
-            patterns={patterns}
-          />
-        )}
-      </p.div>
-      <VStack p="2">
-        パターンを入力
-        <p.input
-          bg="blue.100"
-          fontFamily="mono"
-          onChange={(e) => {
-            setPatterns([e.target.value]);
-          }}
-          p="1"
-          type="text"
-          value={patterns}
-          w="100%"
-        />
-      </VStack>
-    </p.div>
+    <VStack alignItems="start" w="100%">
+      パターンを入力 (改行で複数指定)
+      <p.textarea
+        border="1px solid"
+        fontFamily="udev"
+        maxH="5lh"
+        onChange={(e) => {
+          setPatterns(e.target.value.split("\n"));
+        }}
+        p="1"
+        rounded="md"
+        style={{
+          // @ts-expect-error: New CSS properties
+          fieldSizing: "content",
+        }}
+        value={patterns.join("\n")}
+        w="100%"
+      />
+    </VStack>
   );
 }

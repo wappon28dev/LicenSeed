@@ -1,8 +1,9 @@
 import { persistentAtom } from "@nanostores/persistent";
 import { getLocalStorageKey } from "@/lib/consts";
-import { type SeedDefWizard } from "@/types/seed-def";
+import { type SeedDef } from "@/types/bindings";
+import { type PartialRecursive } from "@/types/utils";
 
-export const $seedDefWizard = persistentAtom<Partial<SeedDefWizard>>(
+export const $seedDefWizard = persistentAtom<PartialRecursive<SeedDef>>(
   getLocalStorageKey("seedDefWizard"),
   {},
   {
