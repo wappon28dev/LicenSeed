@@ -3,6 +3,7 @@ import * as HoverCard from "@radix-ui/react-hover-card";
 import { css } from "panda/css";
 import { HStack, styled as p, VStack } from "panda/jsx";
 import { type ReactElement } from "react";
+import { ErrorScreen } from "@/components/ErrorScreen";
 import {
   type Summary,
   type SeedBaseGroupManifest,
@@ -41,7 +42,12 @@ export function RenderedSummaryEntry({
   const termText = groupManifest.terms[entryKey][entry.value];
 
   if (termText == null) {
-    throw new Error(`No term found for ${entryKey} ${entry.value}`);
+    return (
+      <ErrorScreen
+        error={`No term found for ${entryKey} ${entry.value}`}
+        title="シードサマリーを表示"
+      />
+    );
   }
 
   return (

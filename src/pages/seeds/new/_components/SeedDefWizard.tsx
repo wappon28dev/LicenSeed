@@ -1,13 +1,53 @@
-import { Icon } from "@iconify/react";
 import { useStore } from "@nanostores/react";
-import * as AlertDialog from "@radix-ui/react-alert-dialog";
-import { HStack, VStack, styled as p } from "panda/jsx";
+import { css } from "panda/css";
+import { Divider, HStack, VStack, styled as p } from "panda/jsx";
+import { vstack } from "panda/patterns/vstack";
 import { useEffect, type ReactElement } from "react";
+import { Resplit } from "react-resplit";
+import { match, P } from "ts-pattern";
 import { FilePatternsInput } from "./FileSelect";
-import { SelectSeedBase } from "./SelectSeedBase";
+import { DisplaySeedBase, SelectSeedBaseDialog } from "./SelectSeedBase";
 import { SelectSeedDefType } from "./SelectSeedDefType";
-import { Dialog } from "@/components/Dialog";
+import { Button } from "@/components/Button";
+import { Splitter } from "@/components/Splitter";
 import { $seedDefWizard } from "@/lib/stores/seed-def";
+
+function BaseSeedSelector(): ReactElement {
+  const seedDefWizard = useStore($seedDefWizard);
+  return (
+    <HStack alignItems="start">
+      <SelectSeedBaseDialog
+        setSelectedId={(id) => {
+          match(seedDefWizard.data)
+            .with({ type: P.union("FORK", "REUSE") }, (data) => {
+              $seedDefWizard.set({
+                ...seedDefWizard,
+                data: {
+                  ...data,
+                  base: { id },
+                },
+              });
+            })
+            .with({ type: "CROSSBREED" }, (data) => {
+              $seedDefWizard.set({
+                ...seedDefWizard,
+                data: {
+                  ...data,
+                  bases: [...(data.bases ?? []), { id }],
+                },
+              });
+            });
+        }}
+        setSummary={(summary) => {
+          $seedDefWizard.set({
+            ...seedDefWizard,
+            summary,
+          });
+        }}
+      />
+    </HStack>
+  );
+}
 
 export function SeedDefWizard(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
@@ -21,94 +61,87 @@ export function SeedDefWizard(): ReactElement {
       <p.p fontSize="2xl" fontWeight="bold">
         新しいシードを定義
       </p.p>
-      <VStack alignItems="start" w="100%">
-        <p.p>シード名を入力</p.p>
-        <p.input
-          border="1px solid"
-          onChange={(e) => {
-            $seedDefWizard.set({
-              ...seedDefWizard,
-              title: e.target.value,
-            });
+      <Divider />
+      <Resplit.Root
+        className={css({ w: "100%", h: "100%", flex: 1 })}
+        direction="horizontal"
+      >
+        <Resplit.Pane
+          className={vstack({ w: "100%", h: "100%", overflowY: "auto" })}
+          initialSize="1fr"
+          order={0}
+        >
+          <VStack alignItems="start" gap="3" h="100%" w="100%">
+            <VStack alignItems="start" w="100%">
+              <p.p>シード名</p.p>
+              <p.input
+                border="1px solid"
+                onChange={(e) => {
+                  $seedDefWizard.set({
+                    ...seedDefWizard,
+                    title: e.target.value,
+                  });
+                }}
+                p="1"
+                rounded="md"
+                type="text"
+                w="100%"
+              />
+            </VStack>
+
+            <VStack alignItems="start" w="100%">
+              <p.p>シードの種類を選択</p.p>
+              <SelectSeedDefType />
+            </VStack>
+            <FilePatternsInput
+              patterns={seedDefWizard.territory ?? []}
+              setPatterns={(newPattern) => {
+                $seedDefWizard.set({
+                  ...seedDefWizard,
+                  territory: newPattern,
+                });
+              }}
+            />
+            {match(seedDefWizard.data?.type)
+              .with(P.union("FORK", "REUSE"), () => (
+                <VStack alignItems="start" h="100%" w="100%">
+                  <p.p>ベースシード</p.p>
+                  <BaseSeedSelector />
+                </VStack>
+              ))
+              .otherwise(() => (
+                <p.div />
+              ))}
+          </VStack>
+        </Resplit.Pane>
+        <Splitter
+          style={{
+            borderLeft: "1.5px dashed",
           }}
-          p="1"
-          rounded="md"
-          type="text"
-          w="100%"
         />
-      </VStack>
-
-      <SelectSeedDefType />
-      <FilePatternsInput
-        patterns={seedDefWizard.territory ?? []}
-        setPatterns={(newPattern) => {
-          $seedDefWizard.set({
-            ...seedDefWizard,
-            territory: newPattern,
-          });
-        }}
-      />
-      <VStack alignItems="start" h="100%" p="2" w="100%">
-        <p.p>ベースシード</p.p>
-        <HStack h="100%" w="100%">
-          <Dialog
-            content={(setIsOpened) => (
-              <VStack bg="white" h="100%" p="2" rounded="md" w="100%">
-                <AlertDialog.Title>
-                  <p.p fontSize="xl" fontWeight="bold">
-                    ベースシードを選択
-                  </p.p>
-                </AlertDialog.Title>
-                <AlertDialog.Description />
-                <p.div
-                  flex="1"
-                  maxH="calc(100vh - 280px)"
-                  overflow="auto"
-                  w="100%"
-                >
-                  <SelectSeedBase
-                    setSelectedId={(id) => {
-                      if (
-                        !(
-                          seedDefWizard.data?.type === "REUSE" ||
-                          seedDefWizard.data?.type === "FORK"
-                        )
-                      ) {
-                        return;
-                      }
-
-                      $seedDefWizard.set({
-                        ...seedDefWizard,
-                        data: {
-                          id,
-                        },
-                      });
-                    }}
-                  />
-                </p.div>
-                <p.button
-                  bg="blue.500"
-                  color="white"
-                  onClick={() => {
-                    setIsOpened(false);
-                  }}
-                  p="2"
-                  rounded="md"
-                >
-                  <HStack>
-                    <Icon icon="mdi:check" />
-                    <p.p>確定</p.p>
-                  </HStack>
-                </p.button>
-              </VStack>
-            )}
-          >
-            <p.button bg="blue.500" color="white" p="2" rounded="md">
-              ベースシードを選択
-            </p.button>
-          </Dialog>
-        </HStack>
-      </VStack>
+        <Resplit.Pane
+          className={css({
+            h: "100%",
+            w: "100%",
+            overflowY: "auto",
+          })}
+          order={2}
+        >
+          <p.p position="sticky" top="0">
+            プレビュー
+          </p.p>
+          <DisplaySeedBase />
+        </Resplit.Pane>
+      </Resplit.Root>
+      <Divider />
+      <HStack justifyContent="space-between" w="100%">
+        <Button icon="mdi:cancel" type="outline">
+          <p.p>キャンセル</p.p>
+        </Button>
+        <Button icon="mdi:plus">
+          <p.p>追加</p.p>
+        </Button>
+      </HStack>
     </VStack>
   );
 }

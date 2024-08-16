@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
 import { useStore } from "@nanostores/react";
-import { Flex, HStack, styled as p, VStack } from "panda/jsx";
+import { HStack, styled as p, VStack } from "panda/jsx";
 import { token } from "panda/tokens";
 import { type ReactElement } from "react";
 import { $seedDefWizard } from "@/lib/stores/seed-def";
@@ -34,15 +34,12 @@ function SeedDefTypeCard({
       }}
       w="100%"
     >
-      <Flex alignItems="center" justifyContent="space-between" w="100%">
-        <HStack flex="1" w="100%">
-          <Icon height="2em" icon={icon} />
-          <p.p fontSize="md" fontWeight="bold">
-            {title}
-          </p.p>
-        </HStack>
-        <Icon height="1.5em" icon="mdi:arrow-right" />
-      </Flex>
+      <HStack flex="1" w="100%">
+        <Icon height="2em" icon={icon} />
+        <p.p fontSize="md" fontWeight="bold">
+          {title}
+        </p.p>
+      </HStack>
       <HStack bg="white" color="black" p="2" rounded="md" w="100%">
         <Icon icon="mdi:information-outline" />
         <p.p fontSize="xs">{description}</p.p>
@@ -96,19 +93,22 @@ export function SelectSeedDefType(): ReactElement {
       w="100%"
     >
       {getEntries(selection).map(([type, { icon, title, description }]) => {
-        const isSelected = type === seedDefWizard.data?.type;
+        const isSelected = seedDefWizard.data?.type === type;
+
         return (
           <SeedDefTypeCard
             key={type}
             description={description}
             icon={icon}
-            isSelected={type === seedDefWizard.data?.type}
+            isSelected={isSelected}
             onClick={() => {
               $seedDefWizard.set({
                 ...seedDefWizard,
-                data: {
-                  type: isSelected ? undefined : type,
-                },
+                data: isSelected
+                  ? undefined
+                  : {
+                      type,
+                    },
               });
             }}
             title={title}

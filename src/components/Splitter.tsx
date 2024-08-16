@@ -1,12 +1,18 @@
 import { css } from "panda/css";
 import { styled as p } from "panda/jsx";
-import { type ComponentProps, type ReactElement } from "react";
+import {
+  type CSSProperties,
+  type ComponentProps,
+  type ReactElement,
+} from "react";
 import { Resplit } from "react-resplit";
 
 export function Splitter({
   order = 1,
+  style = {},
 }: {
   order?: ComponentProps<typeof Resplit.Splitter>["order"];
+  style?: CSSProperties;
 }): ReactElement {
   return (
     <Resplit.Splitter
@@ -15,7 +21,7 @@ export function Splitter({
         placeItems: "center",
         _hover: {
           "& > div": {
-            bg: "blue.500",
+            bg: "blue.300",
           },
         },
         _active: {
@@ -29,6 +35,7 @@ export function Splitter({
     >
       <p.div
         h="100%"
+        style={style}
         transition="background 0.3s"
         transitionDelay="0.1s"
         w="3px"

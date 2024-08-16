@@ -1,11 +1,19 @@
 import { Icon } from "@iconify/react";
+import { useStore } from "@nanostores/react";
+import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { css } from "panda/css";
-import { styled as p, VStack } from "panda/jsx";
+import { HStack, styled as p, VStack } from "panda/jsx";
 import { vstack } from "panda/patterns/vstack";
-import { useEffect, useState, type ReactElement } from "react";
+import {
+  type ComponentProps,
+  useEffect,
+  useState,
+  type ReactElement,
+} from "react";
 import { Resplit } from "react-resplit";
 import useSWRImmutable from "swr/immutable";
 import { match, P } from "ts-pattern";
+import { Dialog } from "@/components/Dialog";
 import { ErrorScreen } from "@/components/ErrorScreen";
 import { PickerCard } from "@/components/PickerCard";
 import { Splitter } from "@/components/Splitter";
@@ -13,13 +21,18 @@ import { SeedSummary } from "@/components/seed/Summary";
 import { S, T } from "@/lib/consts";
 import { api } from "@/lib/services/api";
 import {
+  $seedBaseGroupManifestCache,
+  $seedDefWizard,
+} from "@/lib/stores/seed-def";
+import {
   type SeedBaseGroupManifest,
   type SeedBase,
   type SeedBaseGroup,
+  type Summary,
 } from "@/types/bindings";
 import { type Nullable } from "@/types/utils";
 
-function DisplaySummary({
+export function DisplaySummary({
   groupManifest,
   seedBase,
 }: {
@@ -57,6 +70,38 @@ function DisplaySummary({
           </p.p>
         </p.div>
       </VStack>
+    ));
+}
+
+export function DisplaySeedBase(): ReactElement {
+  const seedDefWizard = useStore($seedDefWizard);
+  const groupManifest = useStore($seedBaseGroupManifestCache);
+
+  if (seedDefWizard.data == null) {
+    return <p.div />;
+  }
+
+  return match({ seedDefWizard, groupManifest })
+    .with(
+      {
+        seedDefWizard: {
+          summary: P.nonNullable,
+          data: {
+            type: P.union("REUSE", "FORK"),
+          },
+        },
+        groupManifest: P.nonNullable,
+      },
+      ({ groupManifest: _g, seedDefWizard: { summary } }) => (
+        <p.div h="100%" w="100%">
+          <SeedSummary groupManifest={_g} summary={summary} />
+        </p.div>
+      ),
+    )
+    .otherwise(() => (
+      <p.div h="100%" w="100%">
+        <ErrorScreen error="Not implemented" title="シードベースの表示" />
+      </p.div>
     ));
 }
 
@@ -114,9 +159,11 @@ function SeedBaseSelector({
 function SeedBaseGroupSelector({
   groups,
   setSelectedId,
+  setSummary,
 }: {
   groups: SeedBaseGroup[];
   setSelectedId: (id: string) => void;
+  setSummary: (summary: Summary) => void;
 }): ReactElement {
   const [selectedGroup, setSelectedGroup] = useState<SeedBaseGroup>();
   const [selectedBase, setSelectedBase] = useState<SeedBase>();
@@ -127,6 +174,9 @@ function SeedBaseGroupSelector({
   useEffect(() => {
     setSelectedBase(undefined);
     setHoveredBase(undefined);
+
+    if (selectedGroup == null) return;
+    $seedBaseGroupManifestCache.set(selectedGroup.manifest);
   }, [selectedGroup]);
 
   useEffect(() => {
@@ -173,6 +223,7 @@ function SeedBaseGroupSelector({
           group={selectedGroup}
           onClick={(base) => {
             setSelectedBase(selectedBase === base ? undefined : base);
+            setSummary(base.summary);
           }}
           onMouseEnter={(base) => {
             setHoveredBase(base);
@@ -201,8 +252,10 @@ function SeedBaseGroupSelector({
 
 export function SelectSeedBase({
   setSelectedId,
+  setSummary,
 }: {
   setSelectedId: (id: string) => void;
+  setSummary: (summary: Summary) => void;
 }): ReactElement {
   const swrGroups = useSWRImmutable("groups", fetchGroups);
 
@@ -231,9 +284,54 @@ export function SelectSeedBase({
       </p.div>
     ))
     .with(S.Success, ({ data }) => (
-      <SeedBaseGroupSelector groups={data} setSelectedId={setSelectedId} />
+      <SeedBaseGroupSelector
+        groups={data}
+        setSelectedId={setSelectedId}
+        setSummary={setSummary}
+      />
     ))
     .otherwise(({ error }) => (
       <ErrorScreen error={error} title="ベースシードの読み込み" />
     ));
+}
+
+export function SelectSeedBaseDialog(
+  props: ComponentProps<typeof SelectSeedBase>,
+): ReactElement {
+  return (
+    <Dialog
+      content={(setIsOpened) => (
+        <VStack bg="white" h="100%" p="2" rounded="md" w="100%">
+          <AlertDialog.Title>
+            <p.p fontSize="xl" fontWeight="bold">
+              ベースシードを選択
+            </p.p>
+          </AlertDialog.Title>
+          <AlertDialog.Description />
+          <p.div flex="1" maxH="calc(100vh - 280px)" overflow="auto" w="100%">
+            <SelectSeedBase {...props} />
+          </p.div>
+          <p.button
+            bg="blue.500"
+            color="white"
+            onClick={() => {
+              setIsOpened(false);
+            }}
+            p="2"
+            px="5"
+            rounded="md"
+          >
+            <HStack>
+              <Icon icon="mdi:check" />
+              <p.p>確定</p.p>
+            </HStack>
+          </p.button>
+        </VStack>
+      )}
+    >
+      <p.button bg="blue.500" color="white" p="2" rounded="md">
+        ベースシードを選択
+      </p.button>
+    </Dialog>
+  );
 }
