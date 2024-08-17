@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react";
 import { useStore } from "@nanostores/react";
 import { HStack, styled as p, VStack } from "panda/jsx";
 import { token } from "panda/tokens";
-import { type ReactElement } from "react";
+import { useEffect, type ReactElement } from "react";
 import { $seedDefWizard } from "@/lib/stores/seed-def";
 import { getEntries } from "@/lib/utils";
 import { type SeedDef } from "@/types/bindings";
@@ -84,6 +84,13 @@ const selection = {
 export function SelectSeedDefType(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
 
+  useEffect(() => {
+    $seedDefWizard.set({
+      ...seedDefWizard,
+      summary: undefined,
+    });
+  }, [seedDefWizard.data?.type]);
+
   return (
     <p.div
       alignItems="start"
@@ -104,11 +111,7 @@ export function SelectSeedDefType(): ReactElement {
             onClick={() => {
               $seedDefWizard.set({
                 ...seedDefWizard,
-                data: isSelected
-                  ? undefined
-                  : {
-                      type,
-                    },
+                data: isSelected ? undefined : { type },
               });
             }}
             title={title}

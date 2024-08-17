@@ -1,21 +1,11 @@
 import { persistentAtom } from "@nanostores/persistent";
 import { atom } from "nanostores";
 import { getLocalStorageKey } from "@/lib/consts";
-import {
-  type SeedData,
-  type SeedBaseGroupManifest,
-  type SeedDef,
-} from "@/types/bindings";
-import { type Override, type Nullable } from "@/types/utils";
+import { type SeedBaseGroupManifest } from "@/types/bindings";
+import { type Nullable } from "@/types/utils";
+import { type SeedDefWizardPartial } from "@/types/wizard";
 
-export const $seedDefWizard = persistentAtom<
-  Override<
-    Partial<SeedDef>,
-    {
-      data?: Partial<SeedData>;
-    }
-  >
->(
+export const $seedDefWizard = persistentAtom<SeedDefWizardPartial>(
   getLocalStorageKey("seedDefWizard"),
   {},
   {

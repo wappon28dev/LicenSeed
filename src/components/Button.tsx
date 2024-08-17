@@ -8,23 +8,23 @@ export function Button({
   icon,
   children,
   type = "filled",
-  ...props
+  styles,
 }: {
   type?: "filled" | "light" | "outline";
-  icon: string;
+  icon?: string;
   children: ReactElement;
-  props?: ComponentProps<(typeof p)["button"]>;
+  styles?: ComponentProps<(typeof p)["button"]>;
 }): ReactElement {
   return (
     <p.button
       p="2"
       px="5"
       rounded="md"
-      {...props}
+      {...styles}
       style={{
         backgroundColor: match(type)
           .with("filled", () => token("colors.blue.500"))
-          .with("light", () => token("colors.white"))
+          .with("light", () => token("colors.blue.50"))
           .with("outline", () => token("colors.white"))
           .exhaustive(),
         color: match(type)
@@ -36,7 +36,7 @@ export function Button({
       }}
     >
       <HStack>
-        <Icon icon={icon} />
+        {icon != null && <Icon icon={icon} />}
         {children}
       </HStack>
     </p.button>

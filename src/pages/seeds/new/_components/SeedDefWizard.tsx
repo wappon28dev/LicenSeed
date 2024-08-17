@@ -6,7 +6,8 @@ import { useEffect, type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import { match, P } from "ts-pattern";
 import { FilePatternsInput } from "./FileSelect";
-import { DisplaySeedBase, SelectSeedBaseDialog } from "./SelectSeedBase";
+import { SeedPreview } from "./SeedPreview";
+import { SelectSeedBaseDialog } from "./SelectSeedBase";
 import { SelectSeedDefType } from "./SelectSeedDefType";
 import { Button } from "@/components/Button";
 import { Splitter } from "@/components/Splitter";
@@ -102,11 +103,54 @@ export function SeedDefWizard(): ReactElement {
                 });
               }}
             />
-            {match(seedDefWizard.data?.type)
-              .with(P.union("FORK", "REUSE"), () => (
+            {match(seedDefWizard.data)
+              .with({ type: P.union("FORK", "REUSE") }, ({ base }) => (
                 <VStack alignItems="start" h="100%" w="100%">
                   <p.p>ベースシード</p.p>
-                  <BaseSeedSelector />
+                  <p.div position="relative" w="100%">
+                    <p.input
+                      border="1px solid"
+                      disabled
+                      fontFamily="udev"
+                      p="3"
+                      rounded="md"
+                      type="text"
+                      value={base?.id ?? ""}
+                      w="100%"
+                    />
+                    <p.div
+                      position="absolute"
+                      right="1"
+                      top="50%"
+                      transform="translateY(-50%)"
+                    >
+                      <BaseSeedSelector />
+                    </p.div>
+                  </p.div>
+                </VStack>
+              ))
+              .with({ type: "CROSSBREED" }, ({ bases }) => (
+                <VStack alignItems="start" h="100%" w="100%">
+                  <p.p>ベースシード (複数)</p.p>
+                  <p.div position="relative" w="100%">
+                    <p.input
+                      border="1px solid"
+                      disabled
+                      fontFamily="udev"
+                      p="3"
+                      rounded="md"
+                      type="text"
+                      w="100%"
+                    />
+                    <p.div
+                      position="absolute"
+                      right="1"
+                      top="50%"
+                      transform="translateY(-50%)"
+                    >
+                      <BaseSeedSelector />
+                    </p.div>
+                  </p.div>
                 </VStack>
               ))
               .otherwise(() => (
@@ -120,17 +164,18 @@ export function SeedDefWizard(): ReactElement {
           }}
         />
         <Resplit.Pane
-          className={css({
+          className={vstack({
             h: "100%",
             w: "100%",
+            alignItems: "start",
             overflowY: "auto",
           })}
           order={2}
         >
-          <p.p position="sticky" top="0">
+          <p.p bg="white" position="sticky" top="0">
             プレビュー
           </p.p>
-          <DisplaySeedBase />
+          <SeedPreview />
         </Resplit.Pane>
       </Resplit.Root>
       <Divider />

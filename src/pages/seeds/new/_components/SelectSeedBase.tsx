@@ -1,5 +1,4 @@
 import { Icon } from "@iconify/react";
-import { useStore } from "@nanostores/react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { css } from "panda/css";
 import { HStack, styled as p, VStack } from "panda/jsx";
@@ -20,10 +19,7 @@ import { Splitter } from "@/components/Splitter";
 import { SeedSummary } from "@/components/seed/Summary";
 import { S, T } from "@/lib/consts";
 import { api } from "@/lib/services/api";
-import {
-  $seedBaseGroupManifestCache,
-  $seedDefWizard,
-} from "@/lib/stores/seed-def";
+import { $seedBaseGroupManifestCache } from "@/lib/stores/seed-def";
 import {
   type SeedBaseGroupManifest,
   type SeedBase,
@@ -70,38 +66,6 @@ export function DisplaySummary({
           </p.p>
         </p.div>
       </VStack>
-    ));
-}
-
-export function DisplaySeedBase(): ReactElement {
-  const seedDefWizard = useStore($seedDefWizard);
-  const groupManifest = useStore($seedBaseGroupManifestCache);
-
-  if (seedDefWizard.data == null) {
-    return <p.div />;
-  }
-
-  return match({ seedDefWizard, groupManifest })
-    .with(
-      {
-        seedDefWizard: {
-          summary: P.nonNullable,
-          data: {
-            type: P.union("REUSE", "FORK"),
-          },
-        },
-        groupManifest: P.nonNullable,
-      },
-      ({ groupManifest: _g, seedDefWizard: { summary } }) => (
-        <p.div h="100%" w="100%">
-          <SeedSummary groupManifest={_g} summary={summary} />
-        </p.div>
-      ),
-    )
-    .otherwise(() => (
-      <p.div h="100%" w="100%">
-        <ErrorScreen error="Not implemented" title="シードベースの表示" />
-      </p.div>
     ));
 }
 
@@ -329,8 +293,8 @@ export function SelectSeedBaseDialog(
         </VStack>
       )}
     >
-      <p.button bg="blue.500" color="white" p="2" rounded="md">
-        ベースシードを選択
+      <p.button bg="blue.100" p="2" rounded="md">
+        選択
       </p.button>
     </Dialog>
   );
