@@ -23,12 +23,14 @@ function SeedDefCard(): ReactElement {
             conditions: {},
             limitations: {},
             permissions: {},
+            notes: {},
           },
         }}
         summary={{
           conditions: [],
           limitations: [],
           permissions: [],
+          notes: null,
         }}
       />
     </VStack>

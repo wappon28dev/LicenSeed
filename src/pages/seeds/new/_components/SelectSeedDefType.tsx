@@ -52,25 +52,25 @@ const selection = {
   REUSE: {
     icon: "mdi:sync",
     title: "ベースシードを再利用",
-    description: "事前に定義されたシードからライセンス文を生成します.",
+    description: "事前に定義されたシードからライセンス文を生成します",
   },
   CROSSBREED: {
     icon: "mdi:merge",
     title: "ベースシードを交雑",
     description:
-      "事前に定義されたシードを組み合わて, デュアルライセンスを生成します.",
+      "事前に定義されたシードを組み合わて, デュアルライセンスを生成します",
   },
   FORK: {
     icon: "mdi:invoice-text-edit",
     title: "ベースシードをフォーク",
     description:
-      "事前に定義されたシードに変更を加えて, 新しいライセンス文を生成します.",
+      "事前に定義されたシードに特記事項を加えて, 新しいライセンス文を生成します",
   },
   CUSTOM: {
     icon: "mdi:creation",
     title: "カスタム",
     description:
-      "自分でダイジェストとライセンス文を定義して, ライセンス文を生成します.",
+      "自分でダイジェストとライセンス文を定義して, ライセンス文を生成します",
   },
 } as const satisfies Record<
   SeedDef["data"]["type"],

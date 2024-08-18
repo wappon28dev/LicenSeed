@@ -1,4 +1,9 @@
-import { type SeedBase, type SeedBaseGroup } from "@/types/bindings";
+import {
+  type Terms,
+  type SeedBase,
+  type SeedBaseGroup,
+  type TermEntry,
+} from "@/types/bindings";
 import { type Nullable } from "@/types/utils";
 
 export function findBaseGroupAndBasesFromId(
@@ -16,4 +21,18 @@ export function findBaseGroupAndBasesFromId(
 
   // eslint-disable-next-line consistent-return
   return { group, base };
+}
+
+export function searchTermEntryFromKey(
+  key: string,
+  entryKey: keyof Terms,
+  terms: Terms,
+): Nullable<TermEntry> {
+  const termText = terms[entryKey]?.[key];
+
+  if (termText == null) {
+    return undefined;
+  }
+
+  return termText;
 }

@@ -71,3 +71,18 @@ table {
     font-size: var(--font-sizes-md);
   }
 }
+
+body {
+  .w-md-editor-text-pre > code,
+  .w-md-editor-text-input {
+    font-family: var(--font-udev) !important;
+  }
+
+  .wmde-markdown {
+    font-family: var(--font-line) !important;
+
+    pre > code {
+      font-family: var(--font-udev) !important;
+    }
+  }
+}

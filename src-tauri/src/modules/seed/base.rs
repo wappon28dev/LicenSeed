@@ -28,6 +28,7 @@ struct Terms {
     permissions: HashMap<String, TermEntry>,
     conditions: HashMap<String, TermEntry>,
     limitations: HashMap<String, TermEntry>,
+    notes: Option<HashMap<String, TermEntry>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
