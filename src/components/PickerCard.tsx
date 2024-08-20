@@ -6,14 +6,12 @@ export function PickerCard({
   children,
   tail,
   isSelected,
-  key,
   onClick,
   onMouseEnter,
   onMouseLeave,
 }: {
   children: ReactElement;
   tail: ReactElement;
-  key: string;
   isSelected: boolean;
   onClick?: () => void;
   onMouseEnter?: () => void;
@@ -21,7 +19,6 @@ export function PickerCard({
 }): ReactElement {
   return (
     <HStack
-      key={key}
       _hover={{
         bg: "blue.100",
       }}
