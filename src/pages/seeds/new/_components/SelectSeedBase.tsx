@@ -19,7 +19,7 @@ import { Splitter } from "@/components/Splitter";
 import { SeedSummary } from "@/components/seed/Summary";
 import { S, T } from "@/lib/consts";
 import { api } from "@/lib/services/api";
-import { $seedBaseGroupManifestCache } from "@/lib/stores/seed-def";
+import { $seedBaseGroupCache } from "@/lib/stores/seed-def";
 import {
   type SeedBaseGroupManifest,
   type SeedBase,
@@ -140,7 +140,7 @@ function SeedBaseGroupSelector({
     setHoveredBase(undefined);
 
     if (selectedGroup == null) return;
-    $seedBaseGroupManifestCache.set(selectedGroup.manifest);
+    $seedBaseGroupCache.set(selectedGroup);
   }, [selectedGroup]);
 
   useEffect(() => {

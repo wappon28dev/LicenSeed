@@ -1,7 +1,7 @@
 import { persistentAtom } from "@nanostores/persistent";
 import { atom } from "nanostores";
 import { getLocalStorageKey } from "@/lib/consts";
-import { type SeedBaseGroupManifest } from "@/types/bindings";
+import { type SeedBaseGroup } from "@/types/bindings";
 import { type Nullable } from "@/types/utils";
 import { type SeedDefWizardPartial } from "@/types/wizard";
 
@@ -16,5 +16,4 @@ export const $seedDefWizard = persistentAtom<SeedDefWizardPartial>(
   },
 );
 
-export const $seedBaseGroupManifestCache =
-  atom<Nullable<SeedBaseGroupManifest>>(undefined);
+export const $seedBaseGroupCache = atom<Nullable<SeedBaseGroup>>(undefined);

@@ -4,16 +4,13 @@ import { type ReactElement } from "react";
 import { match, P } from "ts-pattern";
 import { ErrorScreen } from "@/components/ErrorScreen";
 import { SeedSummary } from "@/components/seed/Summary";
-import {
-  $seedDefWizard,
-  $seedBaseGroupManifestCache,
-} from "@/lib/stores/seed-def";
+import { $seedDefWizard, $seedBaseGroupCache } from "@/lib/stores/seed-def";
 
 export function SeedPreview(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
-  const groupManifest = useStore($seedBaseGroupManifestCache);
+  const groupCache = useStore($seedBaseGroupCache);
 
-  return match({ seedDefWizard, groupManifest })
+  return match({ seedDefWizard, groupManifest: groupCache })
     .with(
       {
         groupManifest: P.nonNullable,
@@ -23,7 +20,7 @@ export function SeedPreview(): ReactElement {
       },
       ({ seedDefWizard: _s, groupManifest: _g }) => (
         <p.div h="100%" w="100%">
-          <SeedSummary groupManifest={_g} summary={_s.summary} />
+          <SeedSummary groupManifest={_g.manifest} summary={_s.summary} />
         </p.div>
       ),
     )
@@ -31,7 +28,7 @@ export function SeedPreview(): ReactElement {
       () =>
         seedDefWizard.data == null ||
         seedDefWizard.summary == null ||
-        groupManifest == null,
+        groupCache == null,
       () => (
         <p.p color="gray.500" fontSize="sm">
           プレビューするものがありません

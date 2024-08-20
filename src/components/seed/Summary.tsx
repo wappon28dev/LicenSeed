@@ -164,10 +164,12 @@ export function SeedSummaryNoteEditable({
                   bg="white"
                   border="1px solid"
                   onChange={(e) => {
+                    if (entry.type !== "MARKDOWN") return;
+
                     const next = [...entries];
                     next[idx] = {
+                      ...entry,
                       type: "MARKDOWN",
-                      body: "",
                       title: e.target.value,
                     };
 

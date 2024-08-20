@@ -29,9 +29,9 @@ function Hint({ children }: { children: ReactNode }): ReactElement {
           scale: 2,
         })}
       />
-      <p.p color="gray.500" fontSize="xs">
+      <p.div color="gray.500" fontSize="xs">
         {children}
-      </p.p>
+      </p.div>
     </VStack>
   );
 }

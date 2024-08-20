@@ -26,3 +26,4 @@ panda
 
 
 src/types/bindings.ts
+.env.keys
