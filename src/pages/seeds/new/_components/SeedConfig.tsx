@@ -1,18 +1,13 @@
 import { useStore } from "@nanostores/react";
-import MDEditor from "@uiw/react-md-editor";
-import { css } from "panda/css";
 import { HStack, styled as p, VStack } from "panda/jsx";
-import { useMemo, useState, type ReactElement } from "react";
-import rehypeSanitize from "rehype-sanitize";
+import { useEffect, useMemo, type ReactElement } from "react";
 import { match, P } from "ts-pattern";
 import { SelectSeedBaseDialog } from "./SelectSeedBase";
 import { ErrorScreen } from "@/components/ErrorScreen";
-import { SeedSummaryNoteEditable } from "@/components/seed/Summary";
-import { $seedBaseGroupCache, $seedDefWizard } from "@/lib/stores/seed-def";
-import {
-  checkSeedContradictionFork,
-  type SeedContradiction,
-} from "@/lib/utils/seed";
+
+import { SeedSummaryEditable } from "@/components/seed/Summary";
+import { $seedCheckStatusData, $seedDefWizard } from "@/lib/stores/seed-def";
+import { getKeys } from "@/lib/utils";
 
 function BaseSeedSelector(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
@@ -89,16 +84,19 @@ function BaseSeedSelectorField(): ReactElement {
   );
 }
 
+const defaultSummary = {
+  permissions: [],
+  limitations: [],
+  conditions: [],
+  notes: [],
+};
+
 function SeedConfigReuse(): ReactElement {
   return <BaseSeedSelectorField />;
 }
 
 function SeedConfigFork(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
-  const groupCache = useStore($seedBaseGroupCache);
-  const [seedCheckStatus, setSeedCheckStatus] = useState<
-    "LOADING" | "ERROR" | SeedContradiction
-  >();
 
   if (seedDefWizard.data?.type !== "FORK") {
     return (
@@ -106,75 +104,48 @@ function SeedConfigFork(): ReactElement {
     );
   }
 
-  const { data: seedData, summary } = seedDefWizard;
+  useEffect(() => {
+    const enableChecking =
+      seedDefWizard.data != null &&
+      (seedDefWizard.summary?.notes?.length ?? 0) > 0;
+
+    $seedCheckStatusData.set(
+      enableChecking
+        ? {
+            status: "READY",
+            seedDataType: "FORK",
+          }
+        : undefined,
+    );
+  }, [seedDefWizard.data, seedDefWizard.summary?.notes]);
 
   return (
     <VStack alignItems="start" w="100%">
       <BaseSeedSelectorField />
-      <VStack alignItems="start" w="100%">
+      <VStack
+        alignItems="start"
+        style={{
+          userSelect: seedDefWizard.data.base != null ? "auto" : "none",
+          cursor: seedDefWizard.data.base != null ? "auto" : "not-allowed",
+          opacity: seedDefWizard.data.base != null ? 1 : 0.4,
+        }}
+        w="100%"
+      >
         <p.p>特記事項</p.p>
-        <SeedSummaryNoteEditable
+        <SeedSummaryEditable
           entries={seedDefWizard.summary?.notes ?? []}
           setEntries={(entries) => {
             $seedDefWizard.set({
               ...seedDefWizard,
               summary: {
-                ...(seedDefWizard.summary ?? {
-                  permissions: [],
-                  limitations: [],
-                  conditions: [],
-                  notes: [],
-                }),
+                ...(seedDefWizard.summary ?? defaultSummary),
                 notes: entries,
               },
             });
           }}
+          type="notes"
         />
       </VStack>
-      <p.div
-        onClick={() => {
-          if (seedData.base == null || summary == null || groupCache == null)
-            return;
-
-          const seedBase = groupCache.bases.find(
-            (base) => base.id === seedData.base?.id,
-          );
-
-          if (seedBase == null) {
-            setSeedCheckStatus("ERROR");
-            return;
-          }
-
-          setSeedCheckStatus("LOADING");
-          void checkSeedContradictionFork(seedBase, summary.notes).match(
-            (contradiction) => {
-              setSeedCheckStatus(contradiction);
-            },
-            (error) => {
-              console.error(error);
-              setSeedCheckStatus("ERROR");
-            },
-          );
-        }}
-      >
-        {match(seedCheckStatus)
-          .with(P.nullish, () => "READY")
-          .with("LOADING", () => "LOADING")
-          .with("ERROR", () => "ERROR")
-          .otherwise((data) => (
-            <>
-              <p.p>矛盾しているか: {String(data.isContradiction)}</p.p>
-              <p.p>アドバイス:</p.p>
-              <MDEditor.Markdown
-                className={css({
-                  w: "100%",
-                })}
-                rehypePlugins={[[rehypeSanitize]]}
-                source={data.advice}
-              />
-            </>
-          ))}
-      </p.div>
     </VStack>
   );
 }
@@ -182,29 +153,27 @@ function SeedConfigFork(): ReactElement {
 function SeedConfigCustom(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
 
+  const summary = seedDefWizard.summary ?? defaultSummary;
+
   return (
     <VStack alignItems="start" w="100%">
-      <BaseSeedSelectorField />
-      <VStack alignItems="start" w="100%">
-        <p.p>特記事項</p.p>
-        <SeedSummaryNoteEditable
-          entries={seedDefWizard.summary?.notes ?? []}
-          setEntries={(summary) => {
+      <p.p>サマリー</p.p>
+      {getKeys(summary).map((type) => (
+        <SeedSummaryEditable
+          key={type}
+          entries={seedDefWizard.summary?.[type] ?? []}
+          setEntries={(newEntry) => {
             $seedDefWizard.set({
               ...seedDefWizard,
               summary: {
-                ...(seedDefWizard.summary ?? {
-                  permissions: [],
-                  limitations: [],
-                  conditions: [],
-                  notes: [],
-                }),
-                notes: summary,
+                ...(summary ?? defaultSummary),
+                [type]: newEntry,
               },
             });
           }}
+          type={type}
         />
-      </VStack>
+      ))}
     </VStack>
   );
 }

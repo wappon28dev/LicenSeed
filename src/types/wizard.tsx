@@ -11,3 +11,10 @@ export type SeedDefWizardPartial = Override<
     data?: Partial<SeedData>;
   }
 >;
+
+export type SeedCheckData = {
+  fork: {
+    isContradiction: boolean;
+    advice: string;
+  };
+};

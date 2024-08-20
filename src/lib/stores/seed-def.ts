@@ -1,9 +1,9 @@
 import { persistentAtom } from "@nanostores/persistent";
 import { atom } from "nanostores";
 import { getLocalStorageKey } from "@/lib/consts";
-import { type SeedBaseGroup } from "@/types/bindings";
+import { type SeedData, type SeedBaseGroup } from "@/types/bindings";
 import { type Nullable } from "@/types/utils";
-import { type SeedDefWizardPartial } from "@/types/wizard";
+import { type SeedCheckData, type SeedDefWizardPartial } from "@/types/wizard";
 
 export const $seedDefWizard = persistentAtom<SeedDefWizardPartial>(
   getLocalStorageKey("seedDefWizard"),
@@ -17,3 +17,26 @@ export const $seedDefWizard = persistentAtom<SeedDefWizardPartial>(
 );
 
 export const $seedBaseGroupCache = atom<Nullable<SeedBaseGroup>>(undefined);
+
+export const $seedCheckStatusData = atom<
+  Nullable<
+    | {
+        status: "CHECKING";
+      }
+    | {
+        status: "READY";
+        seedDataType: SeedData["type"];
+      }
+    | {
+        status: "ERROR";
+        seedDataType?: SeedData["type"];
+        title?: string;
+        error?: unknown;
+      }
+    | {
+        status: "DONE";
+        seedDataType: SeedData["type"];
+        data: SeedCheckData["fork"];
+      }
+  >
+>(undefined);

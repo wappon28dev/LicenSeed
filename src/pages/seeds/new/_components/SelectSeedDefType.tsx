@@ -3,7 +3,7 @@ import { useStore } from "@nanostores/react";
 import { HStack, styled as p, VStack } from "panda/jsx";
 import { token } from "panda/tokens";
 import { useEffect, type ReactElement } from "react";
-import { $seedDefWizard } from "@/lib/stores/seed-def";
+import { $seedCheckStatusData, $seedDefWizard } from "@/lib/stores/seed-def";
 import { getEntries } from "@/lib/utils";
 import { type SeedDef } from "@/types/bindings";
 
@@ -89,6 +89,7 @@ export function SelectSeedDefType(): ReactElement {
       ...seedDefWizard,
       summary: undefined,
     });
+    $seedCheckStatusData.set(undefined);
   }, [seedDefWizard.data?.type]);
 
   return (
@@ -112,7 +113,9 @@ export function SelectSeedDefType(): ReactElement {
               $seedDefWizard.set({
                 ...seedDefWizard,
                 data: isSelected ? undefined : { type },
+                summary: undefined,
               });
+              $seedCheckStatusData.set(undefined);
             }}
             title={title}
           />

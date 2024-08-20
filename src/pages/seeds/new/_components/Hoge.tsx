@@ -53,6 +53,7 @@ export function Hoge({
           display: "flex",
           h: "100%",
           w: "100%",
+          userSelect: "none",
         })}
         direction="horizontal"
       >

@@ -12,7 +12,7 @@ import {
   type TermEntry,
 } from "@/types/bindings";
 
-function Hint({ children }: { children: ReactNode }): ReactElement {
+export function Hint({ children }: { children: ReactNode }): ReactElement {
   return (
     <VStack
       bg="white"

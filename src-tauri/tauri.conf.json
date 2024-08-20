@@ -1,7 +1,7 @@
 {
   "productName": "LicenSeed",
   "version": "0.0.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "dev.wappon28dev.licenseed",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",

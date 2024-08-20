@@ -21,7 +21,6 @@ const Card = p("div", {
     rounded: "lg",
     p: "3",
     bg: "gray.100",
-    h: "100%",
     w: "100%",
   },
 });
@@ -43,7 +42,7 @@ const summaryEntry = {
   permissions: {
     id: 0,
     title: "許可されていること",
-    color: "green.500",
+    color: "green.700",
     bgColor: "green.100",
     icon: "mdi:check",
   },
@@ -137,17 +136,20 @@ export function SeedSummary({
   );
 }
 
-export function SeedSummaryNoteEditable({
+export function SeedSummaryEditable({
+  type,
   entries,
   setEntries,
 }: {
+  type: keyof Summary;
   entries: SummaryEntry[];
   setEntries: (newEntries: SummaryEntry[]) => void;
 }): ReactElement {
-  const { bgColor } = summaryEntry.notes;
+  const { bgColor, color, title, icon } = summaryEntry[type];
 
   return (
     <VStack
+      alignItems="start"
       p="3"
       rounded="md"
       style={{
@@ -155,6 +157,14 @@ export function SeedSummaryNoteEditable({
       }}
       w="100%"
     >
+      <IconText
+        style={{
+          color: token(`colors.${color}`),
+        }}
+      >
+        <Icon icon={icon} />
+        {title}
+      </IconText>
       <p.ul w="100%">
         {entries.map((entry, idx) => (
           <p.li key={idx} mb="3">
