@@ -1,4 +1,5 @@
 import { Icon } from "@iconify/react";
+import { useStore } from "@nanostores/react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { css } from "panda/css";
 import { HStack, styled as p, VStack } from "panda/jsx";
@@ -17,9 +18,9 @@ import { ErrorScreen } from "@/components/ErrorScreen";
 import { PickerCard } from "@/components/PickerCard";
 import { Splitter } from "@/components/Splitter";
 import { SeedSummary } from "@/components/seed/Summary";
-import { S, T } from "@/lib/consts";
-import { api } from "@/lib/services/api";
-import { $seedBaseGroupCache } from "@/lib/stores/seed-def";
+import { S } from "@/lib/consts";
+import { $seedBaseGroupCache, $seedDefWizard } from "@/lib/stores/seed-def";
+import { fetchGroups } from "@/lib/utils/seed-base";
 import {
   type SeedBaseGroupManifest,
   type SeedBase,
@@ -129,7 +130,10 @@ function SeedBaseGroupSelector({
   setSelectedId: (id: string) => void;
   setSummary: (summary: Summary) => void;
 }): ReactElement {
-  const [selectedGroup, setSelectedGroup] = useState<SeedBaseGroup>();
+  const seedBaseGroupCache = useStore($seedBaseGroupCache);
+
+  const [selectedGroup, setSelectedGroup] =
+    useState<Nullable<SeedBaseGroup>>(seedBaseGroupCache);
   const [selectedBase, setSelectedBase] = useState<SeedBase>();
   const [hoveredBase, setHoveredBase] = useState<SeedBase>();
 
@@ -140,6 +144,11 @@ function SeedBaseGroupSelector({
     setHoveredBase(undefined);
 
     if (selectedGroup == null) return;
+
+    $seedDefWizard.set({
+      ...$seedDefWizard.get(),
+      group: selectedGroup.manifest.group,
+    });
     $seedBaseGroupCache.set(selectedGroup);
   }, [selectedGroup]);
 
@@ -222,21 +231,6 @@ export function SelectSeedBase({
   setSummary: (summary: Summary) => void;
 }): ReactElement {
   const swrGroups = useSWRImmutable("groups", fetchGroups);
-
-  async function fetchGroups(): Promise<SeedBaseGroup[]> {
-    return match(await api.collectSeedBaseGroups())
-      .with(T.Ok, ({ data }) => data)
-      .with({ ...T.Error, ...{ error: { type: "NOT_FOUND" } } }, () => {
-        throw new Error("SeedBaseGroup not found");
-      })
-      .with(
-        { ...T.Error, ...{ error: { type: "READING_ERROR" } } },
-        ({ error }) => {
-          throw new Error(`SeedBaseGroup reading error: ${error.error}`);
-        },
-      )
-      .exhaustive();
-  }
 
   return match(swrGroups)
     .with(S.Loading, () => (

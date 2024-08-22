@@ -1,13 +1,26 @@
 import { Icon } from "@iconify/react";
-import { styled as p, VStack } from "panda/jsx";
-import { type ReactElement } from "react";
+import { HStack, styled as p, VStack } from "panda/jsx";
+import { useEffect, useRef, type ReactElement } from "react";
 import { Outlet, useRouteError } from "react-router-dom";
 
 import "@/styles/global.css";
 import "@/styles/fonts.css";
 
 export function Catch(): ReactElement {
+  const ref = useRef<HTMLDivElement>(null);
   const error = useRouteError();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (ref.current != null) {
+        ref.current.style.display = "none";
+      }
+    }, 2000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
 
   return (
     <p.div
@@ -24,7 +37,27 @@ export function Catch(): ReactElement {
           Oops! 予期せぬエラーが発生しました
         </p.p>
         <p.code>{String(error)}</p.code>
+        <p.button
+          bg={{
+            base: "red.500",
+            _hover: "red.400",
+          }}
+          color="white"
+          onClick={() => {
+            localStorage.clear();
+            window.location.reload();
+          }}
+          p="2"
+          px="5"
+          rounded="md"
+        >
+          <HStack>
+            <Icon icon="mdi:reload" />
+            <p.p>設定ファイルを削除</p.p>
+          </HStack>
+        </p.button>
         <p.div
+          ref={ref}
           left="50%"
           position="absolute"
           top="50%"

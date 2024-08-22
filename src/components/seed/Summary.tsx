@@ -1,14 +1,23 @@
 /* eslint-disable react/no-array-index-key */
 
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from "@headlessui/react";
 import { Icon } from "@iconify/react";
+import { useStore } from "@nanostores/react";
 import MDEditor from "@uiw/react-md-editor";
 import { css } from "panda/css";
 import { HStack, styled as p, VStack } from "panda/jsx";
 import { token } from "panda/tokens";
-import { type ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import rehypeSanitize from "rehype-sanitize";
+import { match } from "ts-pattern";
 import { DisplaySummaryEntry } from "./SummaryEntry";
-import { Button } from "@/components/Button";
+import { ErrorScreen } from "@/components/ErrorScreen";
+import { $seedBaseGroupCache } from "@/lib/stores/seed-def";
 import { getEntries } from "@/lib/utils";
 import {
   type SummaryEntry,
@@ -136,20 +145,163 @@ export function SeedSummary({
   );
 }
 
-export function SeedSummaryEditable({
-  type,
+function SeedSummaryEditableTerm({
+  idx,
+  entries,
+  summaryKey,
+  setEntries,
+}: {
+  idx: number;
+  entries: SummaryEntry[];
+  summaryKey: keyof Summary;
+  setEntries: (newEntries: SummaryEntry[]) => void;
+}): ReactElement {
+  const entry = entries[idx] as Extract<SummaryEntry, { type: "TERM" }>;
+
+  const seedBaseGroupCache = useStore($seedBaseGroupCache);
+  const [query, setQuery] = useState("");
+
+  if (seedBaseGroupCache == null) {
+    return (
+      <ErrorScreen
+        error="`seedBaseGroupCache` is null!"
+        title="定義済み用語のロード"
+      />
+    );
+  }
+
+  const terms = seedBaseGroupCache.manifest.terms[summaryKey];
+
+  if (terms == null) {
+    return <ErrorScreen error="`term` is null!" title="定義済み用語のロード" />;
+  }
+
+  const filteredTerms =
+    query === ""
+      ? getEntries(terms)
+      : getEntries(terms).filter(
+          ([key, { label, description }]) =>
+            key.includes(query) ||
+            label.includes(query) ||
+            description.includes(query),
+        );
+
+  return (
+    <VStack>
+      <Combobox
+        onChange={(k) => {
+          if (k == null) return;
+
+          const next = [...entries];
+          next[idx] = {
+            ...entry,
+            type: "TERM",
+            key: k,
+          };
+
+          setEntries(next);
+        }}
+        onClose={() => {
+          setQuery("");
+        }}
+        value={entry.key}
+      >
+        <ComboboxInput
+          aria-label="Assignee"
+          // displayValue={(t) => t}
+          onChange={(event) => {
+            setQuery(event.target.value);
+          }}
+        />
+        <ComboboxOptions anchor="bottom" className="border empty:invisible">
+          {filteredTerms.map(([key, { label, description }]) => (
+            <ComboboxOption key={key} value={label}>
+              {label}
+            </ComboboxOption>
+          ))}
+        </ComboboxOptions>
+      </Combobox>
+    </VStack>
+  );
+}
+
+function SeedSummaryEditableMarkdown({
+  idx,
   entries,
   setEntries,
 }: {
-  type: keyof Summary;
+  idx: number;
   entries: SummaryEntry[];
   setEntries: (newEntries: SummaryEntry[]) => void;
 }): ReactElement {
-  const { bgColor, color, title, icon } = summaryEntry[type];
+  const entry = entries[idx] as Extract<SummaryEntry, { type: "MARKDOWN" }>;
+
+  return (
+    <VStack w="100%">
+      <HStack justifyContent="space-between" w="100%">
+        <p.input
+          bg="white"
+          border="1px solid"
+          onChange={(e) => {
+            const next = [...entries];
+            next[idx] = {
+              ...entry,
+              type: "MARKDOWN",
+              title: e.target.value,
+            };
+
+            setEntries(next);
+          }}
+          p="1"
+          placeholder="タイトルを入力"
+          rounded="md"
+          value={entry.title}
+          w="100%"
+        />
+        <p.button
+          onClick={() => {
+            setEntries(entries.filter((_, i) => i !== idx));
+          }}
+        >
+          <Icon height="1.5em" icon="mdi:delete-forever-outline" />
+        </p.button>
+      </HStack>
+      <MDEditor
+        className={css({
+          w: "100%",
+        })}
+        onChange={(value) => {
+          setEntries(
+            entries.map((e, i) =>
+              i === idx ? { ...e, body: value ?? "" } : e,
+            ),
+          );
+        }}
+        previewOptions={{
+          rehypePlugins: [[rehypeSanitize]],
+        }}
+        textareaProps={{
+          placeholder: "説明を入力",
+        }}
+        value={entry.body}
+      />
+    </VStack>
+  );
+}
+
+export function SeedSummaryEditable({
+  summaryKey,
+  entries,
+  setEntries,
+}: {
+  summaryKey: keyof Summary;
+  entries: SummaryEntry[];
+  setEntries: (newEntries: SummaryEntry[]) => void;
+}): ReactElement {
+  const { bgColor, color, title, icon } = summaryEntry[summaryKey];
 
   return (
     <VStack
-      alignItems="start"
       p="3"
       rounded="md"
       style={{
@@ -161,6 +313,8 @@ export function SeedSummaryEditable({
         style={{
           color: token(`colors.${color}`),
         }}
+        textAlign="start"
+        w="100%"
       >
         <Icon icon={icon} />
         {title}
@@ -168,61 +322,60 @@ export function SeedSummaryEditable({
       <p.ul w="100%">
         {entries.map((entry, idx) => (
           <p.li key={idx} mb="3">
-            <VStack w="100%">
-              <HStack justifyContent="space-between" w="100%">
-                <p.input
-                  bg="white"
-                  border="1px solid"
-                  onChange={(e) => {
-                    if (entry.type !== "MARKDOWN") return;
-
-                    const next = [...entries];
-                    next[idx] = {
-                      ...entry,
-                      type: "MARKDOWN",
-                      title: e.target.value,
-                    };
-
-                    setEntries(next);
-                  }}
-                  p="1"
-                  placeholder="タイトル"
-                  rounded="md"
-                  value={entry.type === "MARKDOWN" ? entry.title : ""}
-                  w="100%"
+            {match(entry)
+              .with({ type: "TERM" }, () => (
+                <SeedSummaryEditableTerm
+                  entries={entries}
+                  idx={idx}
+                  setEntries={setEntries}
+                  summaryKey={summaryKey}
                 />
-                <p.button
-                  onClick={() => {
-                    setEntries(entries.filter((_, i) => i !== idx));
-                  }}
-                >
-                  <Icon height="1.5em" icon="mdi:delete-forever-outline" />
-                </p.button>
-              </HStack>
-              <MDEditor
-                className={css({
-                  w: "100%",
-                })}
-                onChange={(value) => {
-                  setEntries(
-                    entries.map((e, i) =>
-                      i === idx ? { ...e, body: value ?? "" } : e,
-                    ),
-                  );
-                }}
-                previewOptions={{
-                  rehypePlugins: [[rehypeSanitize]],
-                }}
-                value={entry.type === "MARKDOWN" ? entry.body : ""}
-              />
-            </VStack>
+              ))
+              .with({ type: "MARKDOWN" }, () => (
+                <SeedSummaryEditableMarkdown
+                  entries={entries}
+                  idx={idx}
+                  setEntries={setEntries}
+                />
+              ))
+              .exhaustive()}
           </p.li>
         ))}
       </p.ul>
-      <Button
-        icon="mdi:plus"
-        props={{
-          onClick: () => {
+      <HStack>
+        <p.button
+          _hover={{
+            bg: "var(--hover-color)",
+          }}
+          onClick={() => {
+            setEntries([
+              ...entries,
+              {
+                type: "TERM",
+                key: "",
+              },
+            ]);
+          }}
+          p="2"
+          rounded="md"
+          style={{
+            color: token(`colors.${color}`),
+            // @ts-expect-error: `--hover-color` is a custom property
+            "--hover-color": token(`colors.${bgColor.replace(".100", ".200")}`),
+          }}
+        >
+          <IconText>
+            <Icon icon="mdi:plus" />
+            <p.p fontSize="sm" fontWeight="medium">
+              定義済み用語
+            </p.p>
+          </IconText>
+        </p.button>
+        <p.button
+          _hover={{
+            bg: "var(--hover-color)",
+          }}
+          onClick={() => {
             setEntries([
               ...entries,
               {
@@ -231,12 +384,23 @@ export function SeedSummaryEditable({
                 body: "",
               },
             ]);
-          },
-        }}
-        type="outline"
-      >
-        <p.p>追加</p.p>
-      </Button>
+          }}
+          p="2"
+          rounded="md"
+          style={{
+            color: token(`colors.${color}`),
+            // @ts-expect-error: `--hover-color` is a custom property
+            "--hover-color": token(`colors.${bgColor.replace(".100", ".200")}`),
+          }}
+        >
+          <IconText>
+            <Icon icon="mdi:plus" />
+            <p.p fontSize="sm" fontWeight="medium">
+              テキスト
+            </p.p>
+          </IconText>
+        </p.button>
+      </HStack>
     </VStack>
   );
 }

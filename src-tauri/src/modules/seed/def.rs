@@ -17,8 +17,7 @@ struct Base {
 #[allow(dead_code)]
 enum SeedData {
     Custom { body: String },
-    Crossbreed { bases: Vec<Base> },
-    Fork { base: Base, diff: String },
+    Fork { base: Base, notes: String },
     Reuse { base: Base },
 }
 
@@ -29,6 +28,7 @@ struct SeedDef {
     territory: Vec<String>,
     data: SeedData,
     summary: Summary,
+    group: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]

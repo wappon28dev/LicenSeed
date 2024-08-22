@@ -8,11 +8,13 @@ export function Button({
   icon,
   children,
   type = "filled",
+  baseColor = "blue",
   props,
 }: {
   type?: "filled" | "light" | "outline";
   icon?: string;
   children: ReactElement;
+  baseColor?: "blue" | "orange" | "green" | "red" | "gray";
   props?: ComponentProps<(typeof p)["button"]>;
 }): ReactElement {
   return (
@@ -22,15 +24,18 @@ export function Button({
       rounded="md"
       style={{
         backgroundColor: match(type)
-          .with("filled", () => token("colors.blue.500"))
-          .with("light", () => token("colors.blue.50"))
+          .with("filled", () => token(`colors.${baseColor}.500`))
+          .with("light", () => token(`colors.${baseColor}.50`))
           .with("outline", () => token("colors.white"))
           .exhaustive(),
         color: match(type)
           .with("filled", () => token("colors.white"))
-          .otherwise(() => token("colors.blue.500")),
+          .otherwise(() => token(`colors.${baseColor}.500`)),
         border: match(type)
-          .with("outline", () => `1px solid ${token("colors.blue.500")}`)
+          .with(
+            "outline",
+            () => `1px solid ${token(`colors.${baseColor}.500`)}`,
+          )
           .otherwise(() => "none"),
       }}
       {...props}

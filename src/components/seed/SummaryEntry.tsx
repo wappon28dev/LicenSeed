@@ -154,7 +154,7 @@ export function DisplaySummaryEntry({
   );
 
   if (termEntry == null) {
-    throw new Error(`No term entry found for key ${summaryEntry.key}`);
+    return <p.li>?</p.li>;
   }
 
   return <DisplaySummaryEntryTerm termEntry={termEntry} />;

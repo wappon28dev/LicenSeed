@@ -1,3 +1,6 @@
+import { match } from "ts-pattern";
+import { T } from "@/lib/consts";
+import { api } from "@/lib/services/api";
 import {
   type Terms,
   type SeedBase,
@@ -35,4 +38,19 @@ export function searchTermEntryFromKey(
   }
 
   return termText;
+}
+
+export async function fetchGroups(): Promise<SeedBaseGroup[]> {
+  return match(await api.collectSeedBaseGroups())
+    .with(T.Ok, ({ data }) => data)
+    .with({ ...T.Error, ...{ error: { type: "NOT_FOUND" } } }, () => {
+      throw new Error("SeedBaseGroup not found");
+    })
+    .with(
+      { ...T.Error, ...{ error: { type: "READING_ERROR" } } },
+      ({ error }) => {
+        throw new Error(`SeedBaseGroup reading error: ${error.error}`);
+      },
+    )
+    .exhaustive();
 }

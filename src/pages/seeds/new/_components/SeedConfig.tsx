@@ -1,62 +1,26 @@
 import { useStore } from "@nanostores/react";
-import { HStack, styled as p, VStack } from "panda/jsx";
-import { useEffect, useMemo, type ReactElement } from "react";
-import { match, P } from "ts-pattern";
+import { styled as p, VStack } from "panda/jsx";
+import { useEffect, type ReactElement } from "react";
+import { match } from "ts-pattern";
 import { SelectSeedBaseDialog } from "./SelectSeedBase";
-import { ErrorScreen } from "@/components/ErrorScreen";
-
 import { SeedSummaryEditable } from "@/components/seed/Summary";
 import { $seedCheckStatusData, $seedDefWizard } from "@/lib/stores/seed-def";
 import { getKeys } from "@/lib/utils";
+import { type Summary } from "@/types/bindings";
+import {
+  type SeedDefWizardPartial,
+  type SeedDefWizardPartialWith,
+} from "@/types/wizard";
 
-function BaseSeedSelector(): ReactElement {
-  const seedDefWizard = useStore($seedDefWizard);
-  return (
-    <HStack alignItems="start">
-      <SelectSeedBaseDialog
-        setSelectedId={(id) => {
-          match(seedDefWizard.data)
-            .with({ type: P.union("FORK", "REUSE") }, (data) => {
-              $seedDefWizard.set({
-                ...seedDefWizard,
-                data: {
-                  ...data,
-                  base: { id },
-                },
-              });
-            })
-            .with({ type: "CROSSBREED" }, (data) => {
-              $seedDefWizard.set({
-                ...seedDefWizard,
-                data: {
-                  ...data,
-                  bases: [...(data.bases ?? []), { id }],
-                },
-              });
-            });
-        }}
-        setSummary={(summary) => {
-          $seedDefWizard.set({
-            ...seedDefWizard,
-            summary,
-          });
-        }}
-      />
-    </HStack>
-  );
-}
-
-function BaseSeedSelectorField(): ReactElement {
-  const seedDefWizard = useStore($seedDefWizard);
-  const baseId = useMemo(
-    () =>
-      match(seedDefWizard.data)
-        .with({ type: "CROSSBREED" }, ({ bases }) => bases?.join(", ") ?? "")
-        .with({ type: P.union("FORK", "REUSE") }, ({ base }) => base?.id ?? "")
-        .otherwise(() => ""),
-    [seedDefWizard.data],
-  );
-
+function BaseSeedSelectorField({
+  seedDefWizard,
+  setSelectedId,
+  setSummary,
+}: {
+  seedDefWizard: SeedDefWizardPartialWith<"FORK" | "REUSE">;
+  setSelectedId: (id: string) => void;
+  setSummary: (summary: Summary) => void;
+}): ReactElement {
   return (
     <VStack alignItems="start" w="100%">
       <p.p>ベースシード</p.p>
@@ -68,7 +32,7 @@ function BaseSeedSelectorField(): ReactElement {
           p="3"
           rounded="md"
           type="text"
-          value={baseId}
+          value={seedDefWizard.data?.base?.id ?? ""}
           w="100%"
         />
         <p.div
@@ -77,7 +41,10 @@ function BaseSeedSelectorField(): ReactElement {
           top="50%"
           transform="translateY(-50%)"
         >
-          <BaseSeedSelector />
+          <SelectSeedBaseDialog
+            setSelectedId={setSelectedId}
+            setSummary={setSummary}
+          />
         </p.div>
       </p.div>
     </VStack>
@@ -91,19 +58,42 @@ const defaultSummary = {
   notes: [],
 };
 
-function SeedConfigReuse(): ReactElement {
-  return <BaseSeedSelectorField />;
+function SeedConfigReuse({
+  seedDefWizard,
+  setSeedDefWizard,
+}: {
+  seedDefWizard: SeedDefWizardPartialWith<"REUSE">;
+  setSeedDefWizard: (seedDefWizard: SeedDefWizardPartialWith<"REUSE">) => void;
+}): ReactElement {
+  return (
+    <BaseSeedSelectorField
+      seedDefWizard={seedDefWizard}
+      setSelectedId={(id) => {
+        setSeedDefWizard({
+          ...seedDefWizard,
+          data: {
+            ...seedDefWizard.data,
+            base: { id },
+          },
+        });
+      }}
+      setSummary={(summary) => {
+        setSeedDefWizard({
+          ...seedDefWizard,
+          summary,
+        });
+      }}
+    />
+  );
 }
 
-function SeedConfigFork(): ReactElement {
-  const seedDefWizard = useStore($seedDefWizard);
-
-  if (seedDefWizard.data?.type !== "FORK") {
-    return (
-      <ErrorScreen error={`Invalid seed type: ${seedDefWizard.data?.type}`} />
-    );
-  }
-
+function SeedConfigFork({
+  seedDefWizard,
+  setSeedDefWizard,
+}: {
+  seedDefWizard: SeedDefWizardPartialWith<"FORK">;
+  setSeedDefWizard: (seedDefWizard: SeedDefWizardPartialWith<"FORK">) => void;
+}): ReactElement {
   useEffect(() => {
     const enableChecking =
       seedDefWizard.data != null &&
@@ -121,13 +111,30 @@ function SeedConfigFork(): ReactElement {
 
   return (
     <VStack alignItems="start" w="100%">
-      <BaseSeedSelectorField />
+      <BaseSeedSelectorField
+        seedDefWizard={seedDefWizard}
+        setSelectedId={(id) => {
+          setSeedDefWizard({
+            ...seedDefWizard,
+            data: {
+              ...seedDefWizard.data,
+              base: { id },
+            },
+          });
+        }}
+        setSummary={(summary) => {
+          setSeedDefWizard({
+            ...seedDefWizard,
+            summary,
+          });
+        }}
+      />
       <VStack
         alignItems="start"
         style={{
-          userSelect: seedDefWizard.data.base != null ? "auto" : "none",
-          cursor: seedDefWizard.data.base != null ? "auto" : "not-allowed",
-          opacity: seedDefWizard.data.base != null ? 1 : 0.4,
+          userSelect: seedDefWizard.data?.base != null ? "auto" : "none",
+          cursor: seedDefWizard.data?.base != null ? "auto" : "not-allowed",
+          opacity: seedDefWizard.data?.base != null ? 1 : 0.4,
         }}
         w="100%"
       >
@@ -135,7 +142,7 @@ function SeedConfigFork(): ReactElement {
         <SeedSummaryEditable
           entries={seedDefWizard.summary?.notes ?? []}
           setEntries={(entries) => {
-            $seedDefWizard.set({
+            setSeedDefWizard({
               ...seedDefWizard,
               summary: {
                 ...(seedDefWizard.summary ?? defaultSummary),
@@ -143,16 +150,20 @@ function SeedConfigFork(): ReactElement {
               },
             });
           }}
-          type="notes"
+          summaryKey="notes"
         />
       </VStack>
     </VStack>
   );
 }
 
-function SeedConfigCustom(): ReactElement {
-  const seedDefWizard = useStore($seedDefWizard);
-
+function SeedConfigCustom({
+  seedDefWizard,
+  setSeedDefWizard,
+}: {
+  seedDefWizard: SeedDefWizardPartialWith<"CUSTOM">;
+  setSeedDefWizard: (seedDefWizard: SeedDefWizardPartialWith<"CUSTOM">) => void;
+}): ReactElement {
   const summary = seedDefWizard.summary ?? defaultSummary;
 
   return (
@@ -163,7 +174,7 @@ function SeedConfigCustom(): ReactElement {
           key={type}
           entries={seedDefWizard.summary?.[type] ?? []}
           setEntries={(newEntry) => {
-            $seedDefWizard.set({
+            setSeedDefWizard({
               ...seedDefWizard,
               summary: {
                 ...(summary ?? defaultSummary),
@@ -171,7 +182,7 @@ function SeedConfigCustom(): ReactElement {
               },
             });
           }}
-          type={type}
+          summaryKey={type}
         />
       ))}
     </VStack>
@@ -181,33 +192,19 @@ function SeedConfigCustom(): ReactElement {
 export function SeedConfig(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
 
-  return match(seedDefWizard.data)
-    .with({ type: "REUSE" }, () => <SeedConfigReuse />)
-    .with({ type: "FORK" }, () => <SeedConfigFork />)
-    .with({ type: "CROSSBREED" }, ({ bases }) => (
-      <VStack alignItems="start" h="100%" w="100%">
-        <p.p>ベースシード (複数)</p.p>
-        <p.div position="relative" w="100%">
-          <p.input
-            border="1px solid"
-            disabled
-            fontFamily="udev"
-            p="3"
-            rounded="md"
-            type="text"
-            w="100%"
-          />
-          <p.div
-            position="absolute"
-            right="1"
-            top="50%"
-            transform="translateY(-50%)"
-          >
-            <BaseSeedSelector />
-          </p.div>
-        </p.div>
-      </VStack>
+  const setSeedDefWizard = (newSeedDefWizard: SeedDefWizardPartial): void => {
+    $seedDefWizard.set(newSeedDefWizard);
+  };
+
+  return match(seedDefWizard)
+    .with({ data: { type: "REUSE" } }, (w) => (
+      <SeedConfigReuse seedDefWizard={w} setSeedDefWizard={setSeedDefWizard} />
     ))
-    .with({ type: "CUSTOM" }, () => <SeedConfigCustom />)
+    .with({ data: { type: "FORK" } }, (w) => (
+      <SeedConfigFork seedDefWizard={w} setSeedDefWizard={setSeedDefWizard} />
+    ))
+    .with({ data: { type: "CUSTOM" } }, (w) => (
+      <SeedConfigCustom seedDefWizard={w} setSeedDefWizard={setSeedDefWizard} />
+    ))
     .otherwise(() => <p.div />);
 }

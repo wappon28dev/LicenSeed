@@ -12,6 +12,7 @@ import rehypeSanitize from "rehype-sanitize";
 import { match, P } from "ts-pattern";
 import { FilePatternsInput } from "./FileSelect";
 import { SeedConfig } from "./SeedConfig";
+import { SeedGroupSelector } from "./SeedGroupSelector";
 import { SeedPreview } from "./SeedPreview";
 import { SelectSeedDefType } from "./SelectSeedDefType";
 import { Button } from "@/components/Button";
@@ -155,7 +156,10 @@ export function SeedDefWizard(): ReactElement {
                 w="100%"
               />
             </VStack>
-
+            <VStack alignItems="start" w="100%">
+              <p.p>シードのグループを選択</p.p>
+              <SeedGroupSelector />
+            </VStack>
             <VStack alignItems="start" w="100%">
               <p.p>シードの種類を選択</p.p>
               <SelectSeedDefType />

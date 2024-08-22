@@ -54,12 +54,6 @@ const selection = {
     title: "ベースシードを再利用",
     description: "事前に定義されたシードからライセンス文を生成します",
   },
-  CROSSBREED: {
-    icon: "mdi:merge",
-    title: "ベースシードを交雑",
-    description:
-      "事前に定義されたシードを組み合わて, デュアルライセンスを生成します",
-  },
   FORK: {
     icon: "mdi:invoice-text-edit",
     title: "ベースシードをフォーク",
