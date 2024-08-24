@@ -10,7 +10,7 @@ import {
 } from "@/types/bindings";
 import { type SeedDefWizardWith, type SeedCheckData } from "@/types/wizard";
 
-function summaryEntry2text(
+export function summaryEntry2text(
   entry: SummaryEntry,
   entryKey: keyof Terms,
   terms: Terms,
@@ -30,7 +30,7 @@ function summaryEntry2text(
     .exhaustive();
 }
 
-function summary2text(summary: Summary, terms: Terms): string {
+export function summary2text(summary: Summary, terms: Terms): string {
   return getEntries(summary)
     .map(([summaryType, summaryEntries]) => {
       if (summaryEntries == null) {

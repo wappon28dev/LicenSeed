@@ -36,8 +36,10 @@ export type SeedCheckData = {
     advice: string;
   };
   CUSTOM: {
+    isContradiction: boolean;
+    advice: string;
     recommendedBaseSeedIds: string[];
-  } & SeedCheckData["FORK"];
+  };
 };
 
 export function zSeedDefWizardParseWith<T extends SeedData["type"]>(

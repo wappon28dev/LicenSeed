@@ -21,6 +21,7 @@ export function Hint({ children }: { children: ReactNode }): ReactElement {
       p="3"
       rounded="md"
       shadow="md"
+      w="100%"
     >
       <HoverCard.Arrow
         className={css({

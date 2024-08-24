@@ -12,8 +12,6 @@ export function ask<T extends object>(prompt: string): ResultAsync<T, unknown> {
     },
   });
 
-  console.log({ prompt });
-
   return ResultAsync.fromPromise(model.generateContent(prompt), (e) => e)
     .andThen(({ response }) => ok(response.text()))
     .map((t) => JSON.parse(t) as T);

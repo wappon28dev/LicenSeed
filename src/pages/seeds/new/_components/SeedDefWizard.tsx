@@ -25,6 +25,7 @@ import {
 import {
   askSeedAdviceWithCustom,
   askSeedAdviceWithFork,
+  summary2text,
 } from "@/lib/utils/seed";
 import { type SeedBaseGroup } from "@/types/bindings";
 import { zSeedBaseGroup } from "@/types/bindings.schema";
@@ -38,6 +39,18 @@ const whatToCheck = {
   FORK: "特記事項の矛盾",
   CUSTOM: "サマリー同士の矛盾と代替ベースシード",
 } as const satisfies Record<keyof SeedCheckData, string>;
+
+function Caution(): ReactElement {
+  return (
+    <VStack gap="0">
+      <Divider color="gray" />
+      <p.p fontSize="sm">
+        これは Gemini (生成系 AI) によるアドバイスを含みます！
+        間違いを含む可能性があるので, アドバイスは常に自身で再確認してください.
+      </p.p>
+    </VStack>
+  );
+}
 
 async function fork(
   seedDefWizard: SeedDefWizardWith<"FORK">,
@@ -104,8 +117,37 @@ function SeedCheckButton(): ReactElement {
 
   function clickHandler(): void {
     match(seedDefWizard)
-      .with({ data: { type: "FORK" } }, (data) => {
-        zSeedDefWizardParseWith<"FORK">(data).match(
+      .with({ data: { type: "FORK" } }, (wizard) => {
+        const terms = groupCache?.manifest.terms;
+        if (terms == null) {
+          $seedCheckStatusData.set({
+            status: "ERROR",
+            seedDataType: "FORK",
+            error: new Error("terms is null"),
+          });
+          return;
+        }
+
+        if (wizard.summary == null) {
+          $seedCheckStatusData.set({
+            status: "ERROR",
+            seedDataType: "FORK",
+            error: new Error("summary is null"),
+          });
+          return;
+        }
+
+        const text = summary2text(wizard.summary, terms);
+
+        $seedDefWizard.set({
+          ...seedDefWizard,
+          data: {
+            ...wizard.data,
+            notes: text,
+          },
+        });
+
+        zSeedDefWizardParseWith<"FORK">($seedDefWizard.get()).match(
           (d) => {
             void fork(d, zSeedBaseGroup.parse(groupCache));
           },
@@ -113,14 +155,13 @@ function SeedCheckButton(): ReactElement {
             $seedCheckStatusData.set({
               status: "ERROR",
               seedDataType: "FORK",
-              title: "特記事項の矛盾",
               error: e,
             });
           },
         );
       })
-      .with({ data: { type: "CUSTOM" } }, (data) => {
-        zSeedDefWizardParseWith<"CUSTOM">(data).match(
+      .with({ data: { type: "CUSTOM" } }, (wizard) => {
+        zSeedDefWizardParseWith<"CUSTOM">(wizard).match(
           (d) => {
             void custom(d, zSeedBaseGroup.parse(groupCache));
           },
@@ -128,7 +169,6 @@ function SeedCheckButton(): ReactElement {
             $seedCheckStatusData.set({
               status: "ERROR",
               seedDataType: "CUSTOM",
-              title: "サマリー同士の矛盾と代替ベースシード",
               error: e,
             });
           },
@@ -148,7 +188,7 @@ function SeedCheckButton(): ReactElement {
             <p.p>Gemini でシードのチェック</p.p>
           </HStack>
         ))
-        .with({ status: "ERROR" }, ({ title, error }) => (
+        .with({ status: "ERROR" }, ({ error, seedDataType }) => (
           <HoverCard.Root closeDelay={0} openDelay={0}>
             <HoverCard.Trigger asChild>
               <HStack
@@ -160,7 +200,9 @@ function SeedCheckButton(): ReactElement {
               >
                 <Icon icon="mdi:robot-dead" />
                 <p.p>
-                  {title != null ? `${title}中に` : "予期せぬ"}
+                  {seedDataType != null
+                    ? `${whatToCheck[seedDataType]}チェック中に`
+                    : "予期せぬ"}
                   エラーが発生しました
                 </p.p>
               </HStack>
@@ -197,57 +239,123 @@ function SeedCheckButton(): ReactElement {
             <p.p>Gemini で{whatToCheck[seedDataType]}チェック</p.p>
           </HStack>
         ))
-        .with({ status: "DONE" }, ({ data, seedDataType }) => (
-          <HoverCard.Root closeDelay={0} openDelay={0}>
-            <HoverCard.Trigger asChild>
-              <HStack
-                px="3"
-                py="2"
-                rounded="md"
-                style={{
-                  color: token(
-                    `colors.${data.isContradiction ? "red" : "green"}.600`,
-                  ),
-                  fontWeight: data.isContradiction ? "bold" : undefined,
-                  background: data.isContradiction
-                    ? token("colors.red.50")
-                    : undefined,
-                }}
-              >
-                <Icon icon={data.isContradiction ? "mdi:close" : "mdi:check"} />
-                <p.p>
-                  {whatToCheck[seedDataType]}チェック:{" "}
-                  {data.isContradiction ? "NG" : "OK"}
-                </p.p>
-                <p.button onClick={clickHandler}>
-                  <Icon icon="mdi:refresh" />
-                </p.button>
-              </HStack>
-            </HoverCard.Trigger>
-            <HoverCard.Portal>
-              <HoverCard.Content
-                className={css({
-                  zIndex: "modalContent",
-                })}
-                side="top"
-                sideOffset={3}
-              >
-                <Hint>
-                  <MDPreview source={data.advice} />
-                </Hint>
-              </HoverCard.Content>
-            </HoverCard.Portal>
-          </HoverCard.Root>
-        ))
         .with({ status: "CHECKING" }, () => (
           <HStack cursor="progress">
             <Icon icon="svg-spinners:ring-resize" />
             <p.p>Gemini と通信中...</p.p>
           </HStack>
         ))
-        .otherwise(() => {
-          throw new Error(`Not implemented: ${checkStatusData?.status}`);
-        })}
+        .with(
+          { status: "DONE", seedDataType: "FORK" },
+          ({ data, seedDataType }) => (
+            <HoverCard.Root closeDelay={0} openDelay={0}>
+              <HoverCard.Trigger asChild>
+                <HStack
+                  px="3"
+                  py="2"
+                  rounded="md"
+                  style={{
+                    color: token(
+                      `colors.${data.isContradiction ? "red" : "green"}.600`,
+                    ),
+                    fontWeight: data.isContradiction ? "bold" : undefined,
+                    background: data.isContradiction
+                      ? token("colors.red.50")
+                      : undefined,
+                  }}
+                >
+                  <Icon
+                    icon={data.isContradiction ? "mdi:close" : "mdi:check"}
+                  />
+                  <p.p>
+                    {whatToCheck[seedDataType]}チェック:{" "}
+                    {data.isContradiction ? "NG" : "OK"}
+                  </p.p>
+                  <p.button onClick={clickHandler}>
+                    <Icon icon="mdi:refresh" />
+                  </p.button>
+                </HStack>
+              </HoverCard.Trigger>
+              <HoverCard.Portal>
+                <HoverCard.Content
+                  className={css({
+                    zIndex: "modalContent",
+                  })}
+                  side="top"
+                  sideOffset={3}
+                >
+                  <Hint>
+                    <MDPreview source={data.advice} />
+                    <Caution />
+                  </Hint>
+                </HoverCard.Content>
+              </HoverCard.Portal>
+            </HoverCard.Root>
+          ),
+        )
+        .with(
+          { status: "DONE", seedDataType: "CUSTOM" },
+          ({ data, seedDataType }) => (
+            <HoverCard.Root closeDelay={0} openDelay={0}>
+              <HoverCard.Trigger asChild>
+                <HStack
+                  px="3"
+                  py="2"
+                  rounded="md"
+                  style={{
+                    color: token(
+                      `colors.${data.isContradiction ? "red" : "green"}.600`,
+                    ),
+                    fontWeight: data.isContradiction ? "bold" : undefined,
+                    background: data.isContradiction
+                      ? token("colors.red.50")
+                      : undefined,
+                  }}
+                >
+                  <Icon
+                    icon={data.isContradiction ? "mdi:close" : "mdi:check"}
+                  />
+                  <p.p>
+                    {whatToCheck[seedDataType]}チェック:{" "}
+                    {data.isContradiction ? "NG" : "OK"}
+                  </p.p>
+                  <p.button onClick={clickHandler}>
+                    <Icon icon="mdi:refresh" />
+                  </p.button>
+                </HStack>
+              </HoverCard.Trigger>
+              <HoverCard.Portal>
+                <HoverCard.Content
+                  className={css({
+                    zIndex: "modalContent",
+                    w: "100%",
+                  })}
+                  side="top"
+                  sideOffset={3}
+                >
+                  <Hint>
+                    <MDPreview source={data.advice} />
+                    {data.recommendedBaseSeedIds.length > 0 && (
+                      <VStack justifyContent="start" pb="2" w="100%">
+                        <Divider color="gray" />
+                        <HStack w="100%">
+                          <p.p color="blue.500" fontWeight="bold">
+                            代替ベースシード
+                          </p.p>
+                          {data.recommendedBaseSeedIds.map((id) => (
+                            <p.code key={id}>{id}</p.code>
+                          ))}
+                        </HStack>
+                      </VStack>
+                    )}
+                    <Caution />
+                  </Hint>
+                </HoverCard.Content>
+              </HoverCard.Portal>
+            </HoverCard.Root>
+          ),
+        )
+        .exhaustive()}
     </p.button>
   );
 }

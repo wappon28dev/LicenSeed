@@ -41,7 +41,7 @@ export function FilePatternsInput({
 }): ReactElement {
   return (
     <VStack alignItems="start" w="100%">
-      パターンを入力 (改行で複数指定)
+      適用したい範囲を入力 (改行で複数指定)
       <p.textarea
         border="1px solid"
         fontFamily="udev"
