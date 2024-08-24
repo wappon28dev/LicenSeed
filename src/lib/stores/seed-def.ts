@@ -1,7 +1,8 @@
 import { persistentAtom } from "@nanostores/persistent";
 import { atom } from "nanostores";
+import { match } from "ts-pattern";
 import { getLocalStorageKey } from "@/lib/consts";
-import { type SeedData, type SeedBaseGroup } from "@/types/bindings";
+import { type SeedBaseGroup } from "@/types/bindings";
 import { type Nullable } from "@/types/utils";
 import { type SeedCheckData, type SeedDefWizardPartial } from "@/types/wizard";
 
@@ -25,18 +26,42 @@ export const $seedCheckStatusData = atom<
       }
     | {
         status: "READY";
-        seedDataType: SeedData["type"];
+        seedDataType: keyof SeedCheckData;
       }
     | {
         status: "ERROR";
-        seedDataType?: SeedData["type"];
+        seedDataType?: keyof SeedCheckData;
         title?: string;
         error?: unknown;
       }
     | {
         status: "DONE";
-        seedDataType: SeedData["type"];
-        data: SeedCheckData["fork"];
+        seedDataType: keyof SeedCheckData;
+        data: SeedCheckData[keyof SeedCheckData];
       }
   >
 >(undefined);
+
+$seedDefWizard.subscribe((wizard) => {
+  match(wizard)
+    .with({ data: { type: "FORK" } }, ({ data, summary }) => {
+      const enableChecking = data != null && (summary?.notes?.length ?? 0) > 0;
+
+      if (enableChecking) {
+        $seedCheckStatusData.set({
+          status: "READY",
+          seedDataType: "FORK",
+        });
+      }
+    })
+    .with({ data: { type: "CUSTOM" } }, ({ data, summary }) => {
+      const enableChecking = data != null && (summary?.notes?.length ?? 0) > 0;
+
+      if (enableChecking) {
+        $seedCheckStatusData.set({
+          status: "READY",
+          seedDataType: "CUSTOM",
+        });
+      }
+    });
+});

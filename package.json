@@ -4,14 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "prepare": "panda codegen",
+    "prepare": "panda codegen && bun run gen:schema",
     "vite": "dotenvx run -- vite",
     "dev": "bun run vite",
     "build": "tsc && bun run vite build",
     "preview": "bun run vite preview",
     "tauri": "tauri",
     "fmt": "prettier --write ./src/",
-    "lint": "eslint --ext .ts,.tsx ./src"
+    "lint": "eslint --ext .ts,.tsx ./src",
+    "gen:schema": "bun run scripts/gen-schema-from-types.ts"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.7.0",
@@ -45,12 +46,14 @@
     "ts-pattern": "^5.1.2",
     "use-resize-observer": "^9.1.0",
     "vite-plugin-static-copy": "^1.0.6",
-    "vscode-material-icons": "^0.1.1"
+    "vscode-material-icons": "^0.1.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@csstools/postcss-cascade-layers": "^4.0.4",
     "@pandacss/dev": "^0.40.1",
     "@tauri-apps/cli": ">=2.0.0-rc.0",
+    "@types/bun": "^1.1.7",
     "@types/natural-compare-lite": "^1.4.2",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
@@ -74,6 +77,7 @@
     "eslint-plugin-react-refresh": "^0.4.6",
     "eslint-plugin-unused-imports": "^3.1.0",
     "prettier": "^3.2.5",
+    "ts-to-zod": "^3.11.0",
     "typescript": "^5.4.5",
     "vite": "^5.2.0",
     "vite-tsconfig-paths": "^4.3.2"

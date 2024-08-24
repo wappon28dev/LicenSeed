@@ -56,6 +56,9 @@ export function DisplaySummary({
             w="100%"
           >
             {base.name}
+            <p.pre color="gray" fontSize="sm">
+              {base.id}
+            </p.pre>
           </p.h2>
           <p.div w="100%">
             <SeedSummary groupManifest={groupManifest} summary={base.summary} />
@@ -81,6 +84,8 @@ function SeedBaseSelector({
   group: Nullable<SeedBaseGroup>;
   selectedBase: Nullable<SeedBase>;
 }): ReactElement {
+  const [query, setQuery] = useState("");
+
   return match(group)
     .with(P.nullish, () => (
       <p.div display="grid" h="100%" placeItems="center" w="100%">
@@ -91,7 +96,7 @@ function SeedBaseSelector({
       </p.div>
     ))
     .otherwise(({ manifest, bases }) => (
-      <VStack alignItems="start">
+      <VStack alignItems="start" w="100%">
         <p.div bg="white" p="1" position="sticky" top="0" w="100%">
           <p.h2 fontSize="2xl" fontWeight="bold">
             {manifest.name}
@@ -99,23 +104,51 @@ function SeedBaseSelector({
           <p.p color="gray" fontSize="md">
             {manifest.description}
           </p.p>
-        </p.div>
-        <VStack gap="0">
-          {bases.map((base) => (
-            <PickerCard
-              key={base.id}
-              isSelected={selectedBase === base}
-              onClick={() => {
-                onClick(base);
+          <p.div position="relative">
+            <p.input
+              border="1px solid"
+              onChange={(e) => {
+                setQuery(e.target.value);
               }}
-              onMouseEnter={() => {
-                onMouseEnter(base);
-              }}
-              tail={<Icon icon="mdi:chevron-right" />}
+              p="1"
+              placeholder="検索"
+              px="2"
+              rounded="md"
+              value={query}
+              w="100%"
+            />
+            <p.div
+              position="absolute"
+              right="2"
+              top="50%"
+              transform="translateY(-50%)"
             >
-              <p.p>{base.name}</p.p>
-            </PickerCard>
-          ))}
+              <Icon icon="mdi:magnify" />
+            </p.div>
+          </p.div>
+        </p.div>
+        <VStack gap="0" w="100%">
+          {bases
+            .filter(
+              ({ id, name }) =>
+                id.toLowerCase().includes(query.toLowerCase()) ||
+                name.toLowerCase().includes(query.toLowerCase()),
+            )
+            .map((base) => (
+              <PickerCard
+                key={base.id}
+                isSelected={selectedBase === base}
+                onClick={() => {
+                  onClick(base);
+                }}
+                onMouseEnter={() => {
+                  onMouseEnter(base);
+                }}
+                tail={<Icon icon="mdi:chevron-right" />}
+              >
+                <p.p>{base.name}</p.p>
+              </PickerCard>
+            ))}
         </VStack>
       </VStack>
     ));

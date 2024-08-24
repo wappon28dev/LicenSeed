@@ -25,5 +25,5 @@ dist-ssr
 panda
 
 
-src/types/bindings.ts
+src/types/bindings.*
 .env.keys

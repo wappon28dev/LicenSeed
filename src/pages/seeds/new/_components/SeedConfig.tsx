@@ -1,10 +1,10 @@
 import { useStore } from "@nanostores/react";
 import { styled as p, VStack } from "panda/jsx";
-import { useEffect, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import { match } from "ts-pattern";
 import { SelectSeedBaseDialog } from "./SelectSeedBase";
 import { SeedSummaryEditable } from "@/components/seed/Summary";
-import { $seedCheckStatusData, $seedDefWizard } from "@/lib/stores/seed-def";
+import { $seedDefWizard } from "@/lib/stores/seed-def";
 import { getKeys } from "@/lib/utils";
 import { type Summary } from "@/types/bindings";
 import {
@@ -94,21 +94,6 @@ function SeedConfigFork({
   seedDefWizard: SeedDefWizardPartialWith<"FORK">;
   setSeedDefWizard: (seedDefWizard: SeedDefWizardPartialWith<"FORK">) => void;
 }): ReactElement {
-  useEffect(() => {
-    const enableChecking =
-      seedDefWizard.data != null &&
-      (seedDefWizard.summary?.notes?.length ?? 0) > 0;
-
-    $seedCheckStatusData.set(
-      enableChecking
-        ? {
-            status: "READY",
-            seedDataType: "FORK",
-          }
-        : undefined,
-    );
-  }, [seedDefWizard.data, seedDefWizard.summary?.notes]);
-
   return (
     <VStack alignItems="start" w="100%">
       <BaseSeedSelectorField
@@ -185,6 +170,29 @@ function SeedConfigCustom({
           summaryKey={type}
         />
       ))}
+      <p.p>ライセンス本文</p.p>
+      <p.textarea
+        border="1px solid"
+        maxH="10lh"
+        minH="5lh"
+        onChange={(e) => {
+          setSeedDefWizard({
+            ...seedDefWizard,
+            data: {
+              ...seedDefWizard.data,
+              body: e.target.value,
+            },
+          });
+        }}
+        p="1"
+        rounded="md"
+        style={{
+          // @ts-expect-error: New CSS properties
+          fieldSizing: "content",
+        }}
+        value={seedDefWizard.data?.body ?? ""}
+        w="100%"
+      />
     </VStack>
   );
 }

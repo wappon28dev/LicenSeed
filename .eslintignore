@@ -1,5 +1,7 @@
 vite.config.mts
 panda.config.ts
+ts-to-zod.config.js
 src/vite-env.d.ts
 src/types/bindings.ts
 src-tauri/
+scripts/

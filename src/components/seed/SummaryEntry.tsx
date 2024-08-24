@@ -1,10 +1,9 @@
 import { Icon } from "@iconify/react";
 import * as HoverCard from "@radix-ui/react-hover-card";
-import MDEditor from "@uiw/react-md-editor";
 import { css } from "panda/css";
 import { HStack, styled as p, VStack } from "panda/jsx";
 import { type ReactNode, type ReactElement } from "react";
-import rehypeSanitize from "rehype-sanitize";
+import { MDPreview } from "../MDPreview";
 import { searchTermEntryFromKey } from "@/lib/utils/seed-base";
 import {
   type SummaryEntry,
@@ -118,13 +117,7 @@ function DisplaySummaryEntryMarkdown({
               sideOffset={3}
             >
               <Hint>
-                <MDEditor.Markdown
-                  className={css({
-                    w: "100%",
-                  })}
-                  rehypePlugins={[[rehypeSanitize]]}
-                  source={mdEntry.body}
-                />
+                <MDPreview source={mdEntry.body} />
               </Hint>
             </HoverCard.Content>
           </HoverCard.Portal>
