@@ -187,8 +187,9 @@ function SeedSummaryEditableTerm({
         );
 
   return (
-    <VStack>
+    <HStack w="100%">
       <Combobox
+        immediate
         onChange={(k) => {
           if (k == null) return;
 
@@ -208,20 +209,66 @@ function SeedSummaryEditableTerm({
       >
         <ComboboxInput
           aria-label="Assignee"
-          // displayValue={(t) => t}
+          className={css({
+            w: "100%",
+            border: "1px solid",
+            rounded: "md",
+            bg: "white",
+            p: "1",
+          })}
           onChange={(event) => {
             setQuery(event.target.value);
           }}
+          value={entry.key}
         />
-        <ComboboxOptions anchor="bottom" className="border empty:invisible">
-          {filteredTerms.map(([key, { label, description }]) => (
-            <ComboboxOption key={key} value={label}>
-              {label}
+        <ComboboxOptions
+          anchor="bottom start"
+          className={css({
+            border: "1px solid",
+            rounded: "md",
+            position: "absolute",
+            left: "0",
+            bg: "white",
+            p: "2",
+            textAlign: "left",
+          })}
+        >
+          {filteredTerms.map(([key, { label, description }], termIdx) => (
+            <ComboboxOption
+              key={key}
+              className={css({
+                w: "100%",
+                px: "3",
+                _hover: {
+                  bg: "gray.100",
+                },
+                cursor: "pointer",
+              })}
+              value={key}
+            >
+              <p.p
+                overflow="hidden"
+                textOverflow="ellipsis"
+                w="50vw"
+                whiteSpace="nowrap"
+              >
+                <p.code color="gray">{termIdx + 1}. </p.code>
+                {label} <p.span color="gray"> — </p.span>
+                <p.code>{key}</p.code>
+                <p.span color="gray"> — {description}</p.span>
+              </p.p>
             </ComboboxOption>
           ))}
         </ComboboxOptions>
       </Combobox>
-    </VStack>
+      <p.button
+        onClick={() => {
+          setEntries(entries.filter((_, i) => i !== idx));
+        }}
+      >
+        <Icon height="1.5em" icon="mdi:delete-forever-outline" />
+      </p.button>
+    </HStack>
   );
 }
 
@@ -299,6 +346,7 @@ export function SeedSummaryEditable({
   setEntries: (newEntries: SummaryEntry[]) => void;
 }): ReactElement {
   const { bgColor, color, title, icon } = summaryEntry[summaryKey];
+  const seedBaseGroupCache = useStore($seedBaseGroupCache);
 
   return (
     <VStack
@@ -347,6 +395,7 @@ export function SeedSummaryEditable({
           _hover={{
             bg: "var(--hover-color)",
           }}
+          disabled={seedBaseGroupCache?.manifest.terms[summaryKey] == null}
           onClick={() => {
             setEntries([
               ...entries,

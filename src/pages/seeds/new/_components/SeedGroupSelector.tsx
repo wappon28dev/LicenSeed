@@ -97,7 +97,12 @@ function Loaded({
                 })}
                 value={group}
               >
-                <p.p>
+                <p.p
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  w="50vw"
+                  whiteSpace="nowrap"
+                >
                   <p.code color="gray">{idx + 1}. </p.code>
                   {name} <p.span color="gray"> — </p.span>
                   <p.code>{group}</p.code>

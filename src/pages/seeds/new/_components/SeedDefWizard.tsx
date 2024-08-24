@@ -160,7 +160,15 @@ export function SeedDefWizard(): ReactElement {
               <p.p>シードのグループを選択</p.p>
               <SeedGroupSelector />
             </VStack>
-            <VStack alignItems="start" w="100%">
+            <VStack
+              alignItems="start"
+              style={{
+                opacity: seedDefWizard.group == null ? 0.4 : 1,
+                userSelect: seedDefWizard.group == null ? "none" : undefined,
+                cursor: seedDefWizard.group == null ? "not-allowed" : undefined,
+              }}
+              w="100%"
+            >
               <p.p>シードの種類を選択</p.p>
               <SelectSeedDefType />
             </VStack>
