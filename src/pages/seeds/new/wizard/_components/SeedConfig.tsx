@@ -4,8 +4,9 @@ import { type ReactElement } from "react";
 import { match } from "ts-pattern";
 import { SeedBaseSelectorDialog } from "./SeedBaseSelectorDialog";
 import { SeedSummaryEditable } from "@/components/seed/Summary";
-import { $seedDefWizard } from "@/lib/stores/seed-def";
+import { $seedBaseGroupCache, $seedDefWizard } from "@/lib/stores/seed-def";
 import { getKeys } from "@/lib/utils";
+import { summaryEntry2text } from "@/lib/utils/seed";
 import { type Summary } from "@/types/bindings";
 import {
   type SeedDefWizardPartial,
@@ -94,6 +95,8 @@ function SeedConfigFork({
   seedDefWizard: SeedDefWizardPartialWith<"FORK">;
   setSeedDefWizard: (seedDefWizard: SeedDefWizardPartialWith<"FORK">) => void;
 }): ReactElement {
+  const groupCache = useStore($seedBaseGroupCache);
+
   return (
     <VStack alignItems="start" w="100%">
       <BaseSeedSelectorField
@@ -127,11 +130,24 @@ function SeedConfigFork({
         <SeedSummaryEditable
           entries={seedDefWizard.summary?.notes ?? []}
           setEntries={(entries) => {
+            const terms = groupCache?.manifest.terms;
+            if (terms == null) {
+              throw new Error("`terms` is null!");
+            }
+
+            const text = entries
+              .map((n) => summaryEntry2text(n, "notes", terms))
+              .join("\n");
+
             setSeedDefWizard({
               ...seedDefWizard,
               summary: {
                 ...(seedDefWizard.summary ?? defaultSummary),
                 notes: entries,
+              },
+              data: {
+                ...seedDefWizard.data,
+                notes: text,
               },
             });
           }}

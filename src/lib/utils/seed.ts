@@ -7,8 +7,36 @@ import {
   type Summary,
   type Terms,
   type SummaryEntry,
+  type SeedData,
 } from "@/types/bindings";
 import { type SeedDefWizardWith, type SeedCheckData } from "@/types/wizard";
+
+export const seedDefTypeInfo = {
+  REUSE: {
+    icon: "mdi:sync",
+    title: "ベースシードを再利用",
+    description: "事前に定義されたシードからライセンス文を生成します",
+  },
+  FORK: {
+    icon: "mdi:invoice-text-edit",
+    title: "ベースシードをフォーク",
+    description:
+      "事前に定義されたシードに特記事項を加えて, 新しいライセンス文を生成します",
+  },
+  CUSTOM: {
+    icon: "mdi:creation",
+    title: "カスタム",
+    description:
+      "自分でダイジェストとライセンス文を定義して, ライセンス文を生成します",
+  },
+} as const satisfies Record<
+  SeedData["type"],
+  {
+    icon: string;
+    title: string;
+    description: string;
+  }
+>;
 
 export function summaryEntry2text(
   entry: SummaryEntry,

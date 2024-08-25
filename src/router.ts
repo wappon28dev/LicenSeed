@@ -6,10 +6,13 @@ import { components, hooks, utils } from '@generouted/react-router/client'
 export type Path =
   | `/`
   | `/seeds/new`
+  | `/seeds/new/overview`
+  | `/seeds/new/wizard`
+  | `/seeds/new/wizard/:idx`
   | `/viewer`
 
 export type Params = {
-  
+  '/seeds/new/wizard/:idx': { idx: string }
 }
 
 export type ModalPath = never

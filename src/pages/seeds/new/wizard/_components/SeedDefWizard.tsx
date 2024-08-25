@@ -5,7 +5,7 @@ import { css } from "panda/css";
 import { Divider, HStack, VStack, styled as p } from "panda/jsx";
 import { vstack } from "panda/patterns/vstack";
 import { token } from "panda/tokens";
-import { useEffect, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import { match, P } from "ts-pattern";
 import { FilePatternsInput } from "./FileSelect";
@@ -25,14 +25,15 @@ import {
 import {
   askSeedAdviceWithCustom,
   askSeedAdviceWithFork,
-  summary2text,
 } from "@/lib/utils/seed";
+import { useNavigate } from "@/router";
 import { type SeedBaseGroup } from "@/types/bindings";
 import { zSeedBaseGroup } from "@/types/bindings.schema";
 import {
   type SeedCheckData,
+  type SeedDefWizard,
   type SeedDefWizardWith,
-  zSeedDefWizardParseWith,
+  zSeedDefWizardParse,
 } from "@/types/wizard";
 
 const whatToCheck = {
@@ -137,17 +138,7 @@ function SeedCheckButton(): ReactElement {
           return;
         }
 
-        const text = summary2text(wizard.summary, terms);
-
-        $seedDefWizard.set({
-          ...seedDefWizard,
-          data: {
-            ...wizard.data,
-            notes: text,
-          },
-        });
-
-        zSeedDefWizardParseWith<"FORK">($seedDefWizard.get()).match(
+        zSeedDefWizardParse<"FORK">($seedDefWizard.get()).match(
           (d) => {
             void fork(d, zSeedBaseGroup.parse(groupCache));
           },
@@ -161,7 +152,7 @@ function SeedCheckButton(): ReactElement {
         );
       })
       .with({ data: { type: "CUSTOM" } }, (wizard) => {
-        zSeedDefWizardParseWith<"CUSTOM">(wizard).match(
+        zSeedDefWizardParse<"CUSTOM">(wizard).match(
           (d) => {
             void custom(d, zSeedBaseGroup.parse(groupCache));
           },
@@ -360,12 +351,13 @@ function SeedCheckButton(): ReactElement {
   );
 }
 
-export function SeedDefWizard(): ReactElement {
+export function SeedDefWizard({
+  onSubmit,
+}: {
+  onSubmit: (newSeedDefWizard: SeedDefWizard) => void;
+}): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
-
-  useEffect(() => {
-    $seedDefWizard.set({});
-  }, []);
+  const navigate = useNavigate();
 
   return (
     <VStack alignItems="start" gap="3" h="100%" p="3" w="100%">
@@ -471,11 +463,25 @@ export function SeedDefWizard(): ReactElement {
       </Resplit.Root>
       <Divider />
       <HStack justifyContent="space-between" w="100%">
-        <Button icon="mdi:cancel" variant="outline">
+        <Button
+          icon="mdi:cancel"
+          onClick={() => {
+            $seedDefWizard.set({});
+            navigate("/seeds/new/overview");
+          }}
+          variant="outline"
+        >
           <p.p>キャンセル</p.p>
         </Button>
         <SeedCheckButton />
-        <Button icon="mdi:plus">
+        <Button
+          disabled={zSeedDefWizardParse(seedDefWizard).isErr()}
+          icon="mdi:plus"
+          onClick={() => {
+            const seedDef = zSeedDefWizardParse(seedDefWizard)._unsafeUnwrap();
+            onSubmit(seedDef);
+          }}
+        >
           <p.p>追加</p.p>
         </Button>
       </HStack>

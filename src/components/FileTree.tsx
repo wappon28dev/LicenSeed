@@ -113,11 +113,7 @@ export function FileTree({
   const [activatedNode, setActivatedNode] = useState<NodeApi<T>>();
 
   const treeRef = useRef() as ComponentProps<typeof Tree<T>>["ref"];
-  const treeApi = useMemo<Nullable<TreeApi<T>>>(() => {
-    const _ref = treeRef as Nullable<MutableRefObject<TreeApi<T>>>;
-    if (_ref?.current == null) return undefined;
-    return _ref.current;
-  }, [treeRef, treeData]);
+  const treeApi = (treeRef as Nullable<MutableRefObject<TreeApi<T>>>)?.current;
 
   const matchedIds = useMemo(
     () => getMatchedIds(treeData, patterns),

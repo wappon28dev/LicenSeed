@@ -31,6 +31,7 @@ const Card = p("div", {
     p: "3",
     bg: "gray.100",
     w: "100%",
+    h: "100%",
   },
 });
 
@@ -100,7 +101,7 @@ export function SeedSummary({
         alignItems="start"
         display="grid"
         gap="3"
-        gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))"
+        gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))"
         justifyContent="start"
         w="100%"
       >

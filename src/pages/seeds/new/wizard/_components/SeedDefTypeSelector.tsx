@@ -5,7 +5,7 @@ import { token } from "panda/tokens";
 import { useEffect, type ReactElement } from "react";
 import { $seedCheckStatusData, $seedDefWizard } from "@/lib/stores/seed-def";
 import { getEntries } from "@/lib/utils";
-import { type SeedDef } from "@/types/bindings";
+import { seedDefTypeInfo } from "@/lib/utils/seed";
 
 function SeedDefTypeCard({
   icon,
@@ -48,33 +48,6 @@ function SeedDefTypeCard({
   );
 }
 
-const selection = {
-  REUSE: {
-    icon: "mdi:sync",
-    title: "ベースシードを再利用",
-    description: "事前に定義されたシードからライセンス文を生成します",
-  },
-  FORK: {
-    icon: "mdi:invoice-text-edit",
-    title: "ベースシードをフォーク",
-    description:
-      "事前に定義されたシードに特記事項を加えて, 新しいライセンス文を生成します",
-  },
-  CUSTOM: {
-    icon: "mdi:creation",
-    title: "カスタム",
-    description:
-      "自分でダイジェストとライセンス文を定義して, ライセンス文を生成します",
-  },
-} as const satisfies Record<
-  SeedDef["data"]["type"],
-  {
-    icon: string;
-    title: string;
-    description: string;
-  }
->;
-
 export function SeedDefTypeSelector(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
 
@@ -94,27 +67,29 @@ export function SeedDefTypeSelector(): ReactElement {
       gridTemplateColumns="repeat(auto-fit, minmax(400pt, 1fr))"
       w="100%"
     >
-      {getEntries(selection).map(([type, { icon, title, description }]) => {
-        const isSelected = seedDefWizard.data?.type === type;
+      {getEntries(seedDefTypeInfo).map(
+        ([type, { icon, title, description }]) => {
+          const isSelected = seedDefWizard.data?.type === type;
 
-        return (
-          <SeedDefTypeCard
-            key={type}
-            description={description}
-            icon={icon}
-            isSelected={isSelected}
-            onClick={() => {
-              $seedDefWizard.set({
-                ...seedDefWizard,
-                data: isSelected ? undefined : { type },
-                summary: undefined,
-              });
-              $seedCheckStatusData.set(undefined);
-            }}
-            title={title}
-          />
-        );
-      })}
+          return (
+            <SeedDefTypeCard
+              key={type}
+              description={description}
+              icon={icon}
+              isSelected={isSelected}
+              onClick={() => {
+                $seedDefWizard.set({
+                  ...seedDefWizard,
+                  data: isSelected ? undefined : { type },
+                  summary: undefined,
+                });
+                $seedCheckStatusData.set(undefined);
+              }}
+              title={title}
+            />
+          );
+        },
+      )}
     </p.div>
   );
 }

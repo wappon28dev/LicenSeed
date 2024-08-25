@@ -2,11 +2,11 @@ import { persistentAtom } from "@nanostores/persistent";
 import { atom } from "nanostores";
 import { match } from "ts-pattern";
 import { getLocalStorageKey } from "@/lib/consts";
-import { getValues } from "@/lib/utils";
-import { type SeedBaseGroup } from "@/types/bindings";
+import { type SeedDef, type SeedBaseGroup } from "@/types/bindings";
 import { type Nullable } from "@/types/utils";
 import { type SeedCheckData, type SeedDefWizardPartial } from "@/types/wizard";
 
+export const $seedDefDraft = atom<SeedDef[]>([]);
 export const $seedDefWizard = persistentAtom<SeedDefWizardPartial>(
   getLocalStorageKey("seedDefWizard"),
   {},
@@ -48,6 +48,8 @@ export const $seedCheckStatusData = atom<
   >
 >(undefined);
 
+// NOTE: コールバック内で `$seedDefWizard` を更新しないこと.
+//       リミットなしで無限ループが発生し, メモリリークが発生する.
 $seedDefWizard.subscribe((wizard) => {
   match(wizard)
     .with({ data: { type: "FORK" } }, ({ data, summary }) => {
@@ -62,10 +64,7 @@ $seedDefWizard.subscribe((wizard) => {
       });
     })
     .with({ data: { type: "CUSTOM" } }, ({ data, summary }) => {
-      const enableChecking =
-        data != null &&
-        summary != null &&
-        getValues(summary).some((v) => (v?.length ?? 0) > 0);
+      const enableChecking = data != null && summary != null;
 
       if (!enableChecking) return;
       $seedCheckStatusData.set({

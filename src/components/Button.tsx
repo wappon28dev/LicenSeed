@@ -21,6 +21,7 @@ export function Button({
       p="2"
       px="5"
       rounded="md"
+      {...props}
       style={{
         backgroundColor: match(variant)
           .with("filled", () => token(`colors.${baseColor}.500`))
@@ -37,7 +38,6 @@ export function Button({
           )
           .otherwise(() => "none"),
       }}
-      {...props}
     >
       <HStack>
         {icon != null && <Icon icon={icon} />}

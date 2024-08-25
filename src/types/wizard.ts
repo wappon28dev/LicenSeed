@@ -42,9 +42,18 @@ export type SeedCheckData = {
   };
 };
 
-export function zSeedDefWizardParseWith<T extends SeedData["type"]>(
+// overload
+export function zSeedDefWizardParse(
   seedDefWizard: SeedDefWizardPartial,
-): Result<SeedDefWizardWith<T>, ZodError> {
+): Result<SeedDefWizard, ZodError>;
+export function zSeedDefWizardParse<T extends SeedData["type"]>(
+  seedDefWizard: SeedDefWizardPartial,
+): Result<SeedDefWizardWith<T>, ZodError>;
+
+// implementation
+export function zSeedDefWizardParse<T extends SeedData["type"]>(
+  seedDefWizard: SeedDefWizardPartial,
+): Result<SeedDefWizard | SeedDefWizardWith<T>, ZodError> {
   return match(
     z
       .object({
@@ -54,10 +63,6 @@ export function zSeedDefWizardParseWith<T extends SeedData["type"]>(
       .safeParse(seedDefWizard),
   )
     .with({ success: true }, ({ data }) => ok(data as SeedDefWizardWith<T>))
-    .with({ success: false }, ({ error }) => {
-      // eslint-disable-next-line no-console
-      console.error(error);
-      return err(error);
-    })
+    .with({ success: false }, ({ error }) => err(error))
     .exhaustive();
 }
