@@ -256,7 +256,7 @@ function SeedBaseGroupSelector({
   );
 }
 
-export function SelectSeedBase({
+function SeedBaseSelectorLoader({
   setSelectedId,
   setSummary,
 }: {
@@ -286,8 +286,8 @@ export function SelectSeedBase({
     ));
 }
 
-export function SelectSeedBaseDialog(
-  props: ComponentProps<typeof SelectSeedBase>,
+export function SeedBaseSelectorDialog(
+  props: ComponentProps<typeof SeedBaseSelectorLoader>,
 ): ReactElement {
   return (
     <Dialog
@@ -300,7 +300,7 @@ export function SelectSeedBaseDialog(
           </AlertDialog.Title>
           <AlertDialog.Description />
           <p.div flex="1" maxH="calc(100vh - 280px)" overflow="auto" w="100%">
-            <SelectSeedBase {...props} />
+            <SeedBaseSelectorLoader {...props} />
           </p.div>
           <p.button
             bg="blue.500"

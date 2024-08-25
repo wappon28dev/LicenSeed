@@ -7,31 +7,30 @@ import { match } from "ts-pattern";
 export function Button({
   icon,
   children,
-  type = "filled",
+  variant = "filled",
   baseColor = "blue",
-  props,
+  ...props
 }: {
-  type?: "filled" | "light" | "outline";
+  variant?: "filled" | "light" | "outline";
   icon?: string;
   children: ReactElement;
   baseColor?: "blue" | "orange" | "green" | "red" | "gray";
-  props?: ComponentProps<(typeof p)["button"]>;
-}): ReactElement {
+} & ComponentProps<(typeof p)["button"]>): ReactElement {
   return (
     <p.button
       p="2"
       px="5"
       rounded="md"
       style={{
-        backgroundColor: match(type)
+        backgroundColor: match(variant)
           .with("filled", () => token(`colors.${baseColor}.500`))
           .with("light", () => token(`colors.${baseColor}.50`))
           .with("outline", () => token("colors.white"))
           .exhaustive(),
-        color: match(type)
+        color: match(variant)
           .with("filled", () => token("colors.white"))
           .otherwise(() => token(`colors.${baseColor}.500`)),
-        border: match(type)
+        border: match(variant)
           .with(
             "outline",
             () => `1px solid ${token(`colors.${baseColor}.500`)}`,

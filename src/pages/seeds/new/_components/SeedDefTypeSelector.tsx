@@ -75,7 +75,7 @@ const selection = {
   }
 >;
 
-export function SelectSeedDefType(): ReactElement {
+export function SeedDefTypeSelector(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
 
   useEffect(() => {

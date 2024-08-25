@@ -2,7 +2,7 @@ import { useStore } from "@nanostores/react";
 import { styled as p, VStack } from "panda/jsx";
 import { type ReactElement } from "react";
 import { match } from "ts-pattern";
-import { SelectSeedBaseDialog } from "./SelectSeedBase";
+import { SeedBaseSelectorDialog } from "./SeedBaseSelectorDialog";
 import { SeedSummaryEditable } from "@/components/seed/Summary";
 import { $seedDefWizard } from "@/lib/stores/seed-def";
 import { getKeys } from "@/lib/utils";
@@ -41,7 +41,7 @@ function BaseSeedSelectorField({
           top="50%"
           transform="translateY(-50%)"
         >
-          <SelectSeedBaseDialog
+          <SeedBaseSelectorDialog
             setSelectedId={setSelectedId}
             setSummary={setSummary}
           />

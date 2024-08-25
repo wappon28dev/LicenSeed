@@ -10,9 +10,9 @@ import { Resplit } from "react-resplit";
 import { match, P } from "ts-pattern";
 import { FilePatternsInput } from "./FileSelect";
 import { SeedConfig } from "./SeedConfig";
+import { SeedDefTypeSelector } from "./SeedDefTypeSelector";
 import { SeedGroupSelector } from "./SeedGroupSelector";
 import { SeedPreview } from "./SeedPreview";
-import { SelectSeedDefType } from "./SelectSeedDefType";
 import { Button } from "@/components/Button";
 import { MDPreview } from "@/components/MDPreview";
 import { Splitter } from "@/components/Splitter";
@@ -435,7 +435,7 @@ export function SeedDefWizard(): ReactElement {
               w="100%"
             >
               <p.p>シードの種類を選択</p.p>
-              <SelectSeedDefType />
+              <SeedDefTypeSelector />
             </VStack>
             <FilePatternsInput
               patterns={seedDefWizard.territory ?? []}
@@ -471,7 +471,7 @@ export function SeedDefWizard(): ReactElement {
       </Resplit.Root>
       <Divider />
       <HStack justifyContent="space-between" w="100%">
-        <Button icon="mdi:cancel" type="outline">
+        <Button icon="mdi:cancel" variant="outline">
           <p.p>キャンセル</p.p>
         </Button>
         <SeedCheckButton />
