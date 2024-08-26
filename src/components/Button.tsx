@@ -22,6 +22,9 @@ export function Button({
       px="5"
       rounded="md"
       {...props}
+      _hover={{
+        opacity: 0.8,
+      }}
       style={{
         backgroundColor: match(variant)
           .with("filled", () => token(`colors.${baseColor}.500`))

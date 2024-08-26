@@ -5,6 +5,7 @@ import { Outlet, useRouteError } from "react-router-dom";
 
 import "@/styles/global.css";
 import "@/styles/fonts.css";
+import { Button } from "@/components/Button";
 
 export function Catch(): ReactElement {
   const ref = useRef<HTMLDivElement>(null);
@@ -37,25 +38,29 @@ export function Catch(): ReactElement {
           Oops! 予期せぬエラーが発生しました
         </p.p>
         <p.code>{String(error)}</p.code>
-        <p.button
-          bg={{
-            base: "red.500",
-            _hover: "red.400",
-          }}
-          color="white"
-          onClick={() => {
-            localStorage.clear();
-            window.location.reload();
-          }}
-          p="2"
-          px="5"
-          rounded="md"
-        >
-          <HStack>
-            <Icon icon="mdi:reload" />
+        <HStack>
+          <Button
+            baseColor="red"
+            icon="mdi:backburger"
+            onClick={() => {
+              window.location.href = "/";
+            }}
+            variant="outline"
+          >
+            <p.p>ホームに戻る</p.p>
+          </Button>
+          <Button
+            baseColor="red"
+            icon="mdi:delete-forever-outline"
+            onClick={() => {
+              localStorage.clear();
+              window.location.reload();
+            }}
+            variant="filled"
+          >
             <p.p>設定ファイルを削除</p.p>
-          </HStack>
-        </p.button>
+          </Button>
+        </HStack>
         <p.div
           ref={ref}
           left="50%"

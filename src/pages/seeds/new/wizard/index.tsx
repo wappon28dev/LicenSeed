@@ -7,9 +7,9 @@ import { SeedDefWizard } from "./_components/SeedDefWizard";
 import { ErrorScreen } from "@/components/ErrorScreen";
 import { FileTree } from "@/components/FileTree";
 import { Splitter } from "@/components/Splitter";
+import { useNavigate } from "@/hooks/useNavigate.ts";
 import { $selectedFiles } from "@/lib/stores/file-tree";
 import { $seedDefDraft, $seedDefWizard } from "@/lib/stores/seed-def";
-import { useNavigate } from "@/router";
 
 export default function Page(): ReactElement {
   const selectedFiles = useStore($selectedFiles);
@@ -31,7 +31,7 @@ export default function Page(): ReactElement {
   const navigate = useNavigate();
 
   return (
-    <p.div h="100%" w="100%">
+    <p.div h="100%" p="1" w="100%">
       <Resplit.Root
         className={css({
           display: "flex",
@@ -72,6 +72,7 @@ export default function Page(): ReactElement {
 
               navigate("/seeds/new/overview");
             }}
+            variant="NEW"
           />
         </Resplit.Pane>
       </Resplit.Root>

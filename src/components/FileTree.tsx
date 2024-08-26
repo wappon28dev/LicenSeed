@@ -72,23 +72,26 @@ function Node({
 
 function Controller<T>({ treeApi }: { treeApi: TreeApi<T> }): ReactElement {
   return (
-    <HStack justifyContent="right" w="100%">
-      <p.button
-        _hover={{ bg: "gray.100" }}
-        onClick={() => {
-          treeApi.openAll();
-        }}
-      >
-        <Icon icon="mdi:plus-box-multiple" />
-      </p.button>
-      <p.button
-        _hover={{ bg: "gray.100" }}
-        onClick={() => {
-          treeApi.closeAll();
-        }}
-      >
-        <Icon icon="mdi:minus-box-multiple" />
-      </p.button>
+    <HStack justifyContent="space-between" w="100%">
+      <p.p fontWeight="bold">ファイルツリー</p.p>
+      <HStack>
+        <p.button
+          _hover={{ bg: "gray.100" }}
+          onClick={() => {
+            treeApi.openAll();
+          }}
+        >
+          <Icon icon="mdi:plus-box-multiple" />
+        </p.button>
+        <p.button
+          _hover={{ bg: "gray.100" }}
+          onClick={() => {
+            treeApi.closeAll();
+          }}
+        >
+          <Icon icon="mdi:minus-box-multiple" />
+        </p.button>
+      </HStack>
     </HStack>
   );
 }
@@ -115,10 +118,7 @@ export function FileTree({
   const treeRef = useRef() as ComponentProps<typeof Tree<T>>["ref"];
   const treeApi = (treeRef as Nullable<MutableRefObject<TreeApi<T>>>)?.current;
 
-  const matchedIds = useMemo(
-    () => getMatchedIds(treeData, patterns),
-    [treeData, patterns],
-  );
+  const matchedIds = getMatchedIds(treeData, patterns);
 
   useEffect(() => {
     treeApi?.deselectAll();

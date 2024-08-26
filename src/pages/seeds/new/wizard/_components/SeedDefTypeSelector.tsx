@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react";
 import { useStore } from "@nanostores/react";
 import { HStack, styled as p, VStack } from "panda/jsx";
 import { token } from "panda/tokens";
-import { useEffect, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import { $seedCheckStatusData, $seedDefWizard } from "@/lib/stores/seed-def";
 import { getEntries } from "@/lib/utils";
 import { seedDefTypeInfo } from "@/lib/utils/seed";
@@ -50,14 +50,6 @@ function SeedDefTypeCard({
 
 export function SeedDefTypeSelector(): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
-
-  useEffect(() => {
-    $seedDefWizard.set({
-      ...seedDefWizard,
-      summary: undefined,
-    });
-    $seedCheckStatusData.set(undefined);
-  }, [seedDefWizard.data?.type]);
 
   return (
     <p.div

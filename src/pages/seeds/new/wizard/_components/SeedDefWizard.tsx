@@ -17,6 +17,7 @@ import { Button } from "@/components/Button";
 import { MDPreview } from "@/components/MDPreview";
 import { Splitter } from "@/components/Splitter";
 import { Hint } from "@/components/seed/SummaryEntry";
+import { useNavigate } from "@/hooks/useNavigate.ts";
 import {
   $seedBaseGroupCache,
   $seedCheckStatusData,
@@ -26,7 +27,6 @@ import {
   askSeedAdviceWithCustom,
   askSeedAdviceWithFork,
 } from "@/lib/utils/seed";
-import { useNavigate } from "@/router";
 import { type SeedBaseGroup } from "@/types/bindings";
 import { zSeedBaseGroup } from "@/types/bindings.schema";
 import {
@@ -352,8 +352,10 @@ function SeedCheckButton(): ReactElement {
 }
 
 export function SeedDefWizard({
+  variant,
   onSubmit,
 }: {
+  variant: "NEW" | "EDIT";
   onSubmit: (newSeedDefWizard: SeedDefWizard) => void;
 }): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
@@ -362,7 +364,10 @@ export function SeedDefWizard({
   return (
     <VStack alignItems="start" gap="3" h="100%" p="3" w="100%">
       <p.p fontSize="2xl" fontWeight="bold">
-        新しいシードを定義
+        {match(variant)
+          .with("NEW", () => "新しいシードを追加")
+          .with("EDIT", () => `シードの編集: ${seedDefWizard.title}`)
+          .exhaustive()}
       </p.p>
       <Divider />
       <Resplit.Root
@@ -394,7 +399,7 @@ export function SeedDefWizard({
                 />
               </VStack>
               <VStack alignItems="start">
-                <p.p>付与ユーザー名</p.p>
+                <p.p>ユーザー名</p.p>
                 <p.input
                   border="1px solid"
                   onChange={(e) => {

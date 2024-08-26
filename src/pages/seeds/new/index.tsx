@@ -2,8 +2,8 @@ import { styled as p } from "panda/jsx";
 import { useEffect, type ReactElement } from "react";
 import { FileSelectionReady } from "./wizard/_components/FileSelect";
 import { useFileSelection } from "@/hooks/file-selection";
+import { useNavigate } from "@/hooks/useNavigate.ts";
 import { $selectedFiles } from "@/lib/stores/file-tree";
-import { useNavigate } from "@/router";
 
 export default function Page(): ReactElement {
   const { basePath, selectDir, fileEntries } = useFileSelection(
