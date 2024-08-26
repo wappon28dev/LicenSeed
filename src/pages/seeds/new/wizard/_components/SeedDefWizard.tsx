@@ -422,6 +422,15 @@ export function SeedDefWizard({
               <p.p>シードのグループを選択</p.p>
               <SeedGroupSelector />
             </VStack>
+            <FilePatternsInput
+              patterns={seedDefWizard.territory ?? []}
+              setPatterns={(newPattern) => {
+                $seedDefWizard.set({
+                  ...seedDefWizard,
+                  territory: newPattern,
+                });
+              }}
+            />
             <VStack
               alignItems="start"
               style={{
@@ -434,15 +443,6 @@ export function SeedDefWizard({
               <p.p>シードの種類を選択</p.p>
               <SeedDefTypeSelector />
             </VStack>
-            <FilePatternsInput
-              patterns={seedDefWizard.territory ?? []}
-              setPatterns={(newPattern) => {
-                $seedDefWizard.set({
-                  ...seedDefWizard,
-                  territory: newPattern,
-                });
-              }}
-            />
             <SeedConfig />
           </VStack>
         </Resplit.Pane>

@@ -3,6 +3,7 @@ import { styled as p, VStack } from "panda/jsx";
 import { type ReactElement } from "react";
 import { match } from "ts-pattern";
 import { SeedBaseSelectorDialog } from "./SeedBaseSelectorDialog";
+import { VariableInput } from "./VariableInput";
 import { SeedSummaryEditable } from "@/components/seed/Summary";
 import { $seedBaseGroupCache, $seedDefWizard } from "@/lib/stores/seed-def";
 import { getKeys } from "@/lib/utils";
@@ -66,25 +67,39 @@ function SeedConfigReuse({
   seedDefWizard: SeedDefWizardPartialWith<"REUSE">;
   setSeedDefWizard: (seedDefWizard: SeedDefWizardPartialWith<"REUSE">) => void;
 }): ReactElement {
+  const groupCache = useStore($seedBaseGroupCache);
+  const seedBase = groupCache?.bases.find(
+    (g) => g.id === seedDefWizard?.data?.base?.id,
+  );
+
   return (
-    <BaseSeedSelectorField
-      seedDefWizard={seedDefWizard}
-      setSelectedId={(id) => {
-        setSeedDefWizard({
-          ...seedDefWizard,
-          data: {
-            ...seedDefWizard.data,
-            base: { id },
-          },
-        });
-      }}
-      setSummary={(summary) => {
-        setSeedDefWizard({
-          ...seedDefWizard,
-          summary,
-        });
-      }}
-    />
+    <VStack w="100%">
+      <BaseSeedSelectorField
+        seedDefWizard={seedDefWizard}
+        setSelectedId={(id) => {
+          setSeedDefWizard({
+            ...seedDefWizard,
+            data: {
+              ...seedDefWizard.data,
+              base: { id },
+            },
+          });
+        }}
+        setSummary={(summary) => {
+          setSeedDefWizard({
+            ...seedDefWizard,
+            summary,
+          });
+        }}
+      />
+      {seedBase != null && (
+        <VariableInput
+          seedBase={seedBase}
+          seedDefWizard={seedDefWizard}
+          setSeedDefWizard={setSeedDefWizard}
+        />
+      )}
+    </VStack>
   );
 }
 
@@ -96,6 +111,9 @@ function SeedConfigFork({
   setSeedDefWizard: (seedDefWizard: SeedDefWizardPartialWith<"FORK">) => void;
 }): ReactElement {
   const groupCache = useStore($seedBaseGroupCache);
+  const seedBase = groupCache?.bases.find(
+    (g) => g.id === seedDefWizard?.data?.base?.id,
+  );
 
   return (
     <VStack alignItems="start" w="100%">
@@ -126,6 +144,13 @@ function SeedConfigFork({
         }}
         w="100%"
       >
+        {seedBase != null && (
+          <VariableInput
+            seedBase={seedBase}
+            seedDefWizard={seedDefWizard}
+            setSeedDefWizard={setSeedDefWizard}
+          />
+        )}
         <p.p>特記事項</p.p>
         <SeedSummaryEditable
           entries={seedDefWizard.summary?.notes ?? []}

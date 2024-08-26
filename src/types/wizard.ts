@@ -5,9 +5,7 @@ import { type SeedDef, type SeedData } from "./bindings";
 import { zSeedData, zSeedDef } from "./bindings.schema";
 import { type OmitStrict, type Override } from "./utils";
 
-export type SeedDefWizard = SeedDef & {
-  data: SeedData;
-};
+export type SeedDefWizard = SeedDef;
 
 export type SeedDefWizardPartial = Override<
   Partial<SeedDefWizard>,

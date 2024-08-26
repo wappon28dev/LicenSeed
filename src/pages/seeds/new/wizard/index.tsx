@@ -1,7 +1,7 @@
 import { useStore } from "@nanostores/react";
 import { css } from "panda/css";
 import { VStack, styled as p } from "panda/jsx";
-import { type ReactElement } from "react";
+import { useEffect, type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import { SeedDefWizard } from "./_components/SeedDefWizard";
 import { ErrorScreen } from "@/components/ErrorScreen";
@@ -9,7 +9,11 @@ import { FileTree } from "@/components/FileTree";
 import { Splitter } from "@/components/Splitter";
 import { useNavigate } from "@/hooks/useNavigate.ts";
 import { $selectedFiles } from "@/lib/stores/file-tree";
-import { $seedDefDraft, $seedDefWizard } from "@/lib/stores/seed-def";
+import {
+  $seedCheckStatusData,
+  $seedDefDraft,
+  $seedDefWizard,
+} from "@/lib/stores/seed-def";
 
 export default function Page(): ReactElement {
   const selectedFiles = useStore($selectedFiles);
@@ -29,6 +33,11 @@ export default function Page(): ReactElement {
   const { basePath, fileEntries } = selectedFiles;
   const seedDefWizard = useStore($seedDefWizard);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    $seedDefWizard.set({});
+    $seedCheckStatusData.set(undefined);
+  }, []);
 
   return (
     <p.div h="100%" p="1" w="100%">

@@ -59,7 +59,7 @@ export function SeedDefPreview({
                 ベースシード: <p.code>{base.id}</p.code>
               </p.p>
             ))
-            .with({ type: "CUSTOM" }, () => <p.p>カスタムシード</p.p>)
+            .with({ type: "CUSTOM" }, () => <p.div />)
             .exhaustive()}
         </HStack>
         <HStack

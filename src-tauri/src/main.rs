@@ -8,6 +8,8 @@ use modules::seed::base::{
     collect_seed_base_groups, collect_seed_base_manifests, get_seed_base, write_seed_base,
 };
 use modules::seed::def::{read_seed_def, write_seed_def};
+use modules::browser::open_browser;
+
 use std::env;
 
 use specta_typescript::Typescript;
@@ -25,7 +27,8 @@ fn main() {
         write_seed_base,
         get_seed_base,
         collect_seed_base_groups,
-        collect_seed_base_manifests
+        collect_seed_base_manifests,
+        open_browser,
     ]);
 
     #[cfg(debug_assertions)]

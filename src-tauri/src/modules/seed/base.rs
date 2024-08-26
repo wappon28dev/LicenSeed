@@ -12,7 +12,7 @@ use crate::modules::resource::resolve_res_path;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
-struct Variable {
+pub struct Variable {
     key: String,
     description: String,
 }

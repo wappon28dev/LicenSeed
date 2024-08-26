@@ -12,13 +12,28 @@ struct Base {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
+struct VariableWithValue {
+    key: String,
+    value: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 // ref: https://qiita.com/aobat/items/6f0c6a3aa4f1b9b303de
 #[serde(tag = "type", rename_all = "SCREAMING_SNAKE_CASE")]
 #[allow(dead_code)]
 enum SeedData {
-    Custom { body: String },
-    Fork { base: Base, notes: String },
-    Reuse { base: Base },
+    Custom {
+        body: String,
+    },
+    Fork {
+        base: Base,
+        notes: String,
+        variables: Vec<VariableWithValue>,
+    },
+    Reuse {
+        base: Base,
+        variables: Vec<VariableWithValue>,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
