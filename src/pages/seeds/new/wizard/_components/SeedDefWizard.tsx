@@ -444,6 +444,7 @@ export function SeedDefWizard({
               <SeedDefTypeSelector />
             </VStack>
             <SeedConfig />
+            <p.div h="2" minH="2" w="100%" />
           </VStack>
         </Resplit.Pane>
         <Splitter
@@ -481,13 +482,21 @@ export function SeedDefWizard({
         <SeedCheckButton />
         <Button
           disabled={zSeedDefWizardParse(seedDefWizard).isErr()}
-          icon="mdi:plus"
+          icon={match(variant)
+            .with("NEW", () => "mdi:plus")
+            .with("EDIT", () => "mdi:content-save")
+            .exhaustive()}
           onClick={() => {
             const seedDef = zSeedDefWizardParse(seedDefWizard)._unsafeUnwrap();
             onSubmit(seedDef);
           }}
         >
-          <p.p>追加</p.p>
+          <p.p>
+            {match(variant)
+              .with("NEW", () => "追加")
+              .with("EDIT", () => "保存")
+              .exhaustive()}
+          </p.p>
         </Button>
       </HStack>
     </VStack>

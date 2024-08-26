@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { useStore } from "@nanostores/react";
 import { css } from "panda/css";
 import { Divider, VStack, styled as p } from "panda/jsx";
-import { useMemo, type ReactElement } from "react";
+import { useMemo, useState, type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import useSWRImmutable from "swr/immutable";
 import { match } from "ts-pattern";
@@ -18,6 +18,7 @@ import { $hoveredPatterns, $selectedFiles } from "@/lib/stores/file-tree";
 import { $seedDefDraft } from "@/lib/stores/seed-def";
 import { fetchGroups } from "@/lib/utils/seed-base";
 import { generateLicenseTextFromSeedDef } from "@/lib/utils/seed-def";
+import { exportSeedDefFile } from "@/lib/utils/seed-def-file";
 import { type SeedBaseGroup } from "@/types/bindings";
 
 function Overview({ groups }: { groups: SeedBaseGroup[] }): ReactElement {
@@ -162,6 +163,75 @@ function OverviewLoader(): ReactElement {
     ));
 }
 
+function ExportButton({ basePath }: { basePath: string }): ReactElement {
+  const swrGroups = useSWRImmutable("groups", fetchGroups);
+  const seedDefDraft = useStore($seedDefDraft);
+  const [exportStatus, setExportStatus] = useState<
+    "READY" | "LOADING" | "DONE" | "ERROR"
+  >("READY");
+
+  function handleClick(groups: SeedBaseGroup[]) {
+    const licenseText = seedDefDraft
+      .map((s) => {
+        const group = groups.find((g) => g.manifest.group === s.group);
+
+        if (group == null) throw new Error(`Base group not found: ${s.group}`);
+
+        return generateLicenseTextFromSeedDef(s, group);
+      })
+      .join("\n\n---\n\n");
+
+    setExportStatus("LOADING");
+
+    console.log("loding...");
+    console.log({ basePath, seedDefDraft, licenseText });
+
+    void exportSeedDefFile(basePath, seedDefDraft, licenseText).match(
+      () => {
+        setExportStatus("DONE");
+      },
+      (e) => {
+        setExportStatus("ERROR");
+        throw e;
+      },
+    );
+  }
+
+  return match(swrGroups)
+    .with(S.Loading, () => <p.div />)
+    .with(S.Success, ({ data }) => (
+      <Button
+        baseColor="green"
+        disabled={
+          seedDefDraft.length === 0 ||
+          exportStatus === "LOADING" ||
+          exportStatus === "DONE"
+        }
+        icon={match(exportStatus)
+          .with("READY", () => "mdi:seed")
+          .with("LOADING", () => "svg-spinners:ring-resize")
+          .with("DONE", () => "mdi:check")
+          .with("ERROR", () => "mdi:alert")
+          .exhaustive()}
+        onClick={() => {
+          handleClick(data);
+        }}
+      >
+        <p.p>
+          {match(exportStatus)
+            .with("READY", () => "付与")
+            .with("LOADING", () => "付与中...")
+            .with("DONE", () => "付与完了")
+            .with("ERROR", () => "付与失敗")
+            .exhaustive()}
+        </p.p>
+      </Button>
+    ))
+    .otherwise(({ error }) => (
+      <ErrorScreen error={error} title="ベースシードの読み込み" />
+    ));
+}
+
 export default function Page(): ReactElement {
   const selectedFiles = useStore($selectedFiles);
 
@@ -212,13 +282,7 @@ export default function Page(): ReactElement {
           </p.div>
           <Divider />
           <p.div p="2">
-            <Button
-              baseColor="green"
-              disabled={seedDefDraft.length === 0}
-              icon="mdi:seed"
-            >
-              <p.p>付与</p.p>
-            </Button>
+            <ExportButton basePath={basePath} />
           </p.div>
         </Resplit.Pane>
         <Splitter />

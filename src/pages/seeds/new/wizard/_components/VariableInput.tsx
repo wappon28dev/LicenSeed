@@ -12,6 +12,10 @@ export function VariableInput<T extends "REUSE" | "FORK">({
   setSeedDefWizard: (seedDefWizard: SeedDefWizardPartialWith<T>) => void;
   seedBase: SeedBase;
 }): ReactElement {
+  if (seedBase.variables.length === 0) {
+    return <p.div />;
+  }
+
   return (
     <VStack alignItems="start" w="100%">
       <p.p>ライセンス文中の変数</p.p>

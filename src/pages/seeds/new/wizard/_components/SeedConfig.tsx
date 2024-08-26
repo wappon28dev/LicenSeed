@@ -82,6 +82,7 @@ function SeedConfigReuse({
             data: {
               ...seedDefWizard.data,
               base: { id },
+              variables: [],
             },
           });
         }}
@@ -125,6 +126,7 @@ function SeedConfigFork({
             data: {
               ...seedDefWizard.data,
               base: { id },
+              variables: [],
             },
           });
         }}
