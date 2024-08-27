@@ -4,13 +4,13 @@ import { normalize } from "pathe";
 import { useEffect, useState } from "react";
 import { match } from "ts-pattern";
 import { api } from "@/lib/services/api";
-import { type $selectedFiles } from "@/lib/stores/file-tree";
+import { type $fileEntriesKit } from "@/lib/stores/file-tree";
 import { type FileEntry } from "@/types/bindings";
 import { type Nullable } from "@/types/utils";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function useFileSelection(
-  init?: ReturnType<(typeof $selectedFiles)["get"]>,
+  init?: ReturnType<(typeof $fileEntriesKit)["get"]>,
 ) {
   const [basePath, setBasePath] = useState<Nullable<string>>(init?.basePath);
   const [fileEntries, setFileEntries] = useState<FileEntry[]>(

@@ -3,17 +3,17 @@ import { useEffect, type ReactElement } from "react";
 import { FileSelectionReady } from "@/components/FileSelect";
 import { useFileSelection } from "@/hooks/file-selection";
 import { useNavigate } from "@/hooks/useNavigate";
-import { $selectedFiles } from "@/lib/stores/file-tree";
+import { $fileEntriesKit } from "@/lib/stores/file-tree";
 
 export default function Page(): ReactElement {
   const { basePath, selectDir, fileEntries } = useFileSelection(
-    $selectedFiles.get(),
+    $fileEntriesKit.get(),
   );
   const navigate = useNavigate();
 
   useEffect(() => {
     if (basePath != null && fileEntries != null && fileEntries.length > 0) {
-      $selectedFiles.set({
+      $fileEntriesKit.set({
         basePath,
         fileEntries,
       });

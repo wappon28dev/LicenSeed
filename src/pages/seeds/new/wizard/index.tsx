@@ -8,15 +8,15 @@ import { ErrorScreen } from "@/components/ErrorScreen";
 import { FileTree } from "@/components/FileTree";
 import { Splitter } from "@/components/Splitter";
 import { useNavigate } from "@/hooks/useNavigate.ts";
-import { $selectedFiles } from "@/lib/stores/file-tree";
+import { $fileEntriesKit } from "@/lib/stores/file-tree";
 import {
   $seedCheckStatusData,
-  $seedDefDraft,
+  $seedDef4overviewDraft,
   $seedDefWizard,
 } from "@/lib/stores/seed-def";
 
 export default function Page(): ReactElement {
-  const selectedFiles = useStore($selectedFiles);
+  const selectedFiles = useStore($fileEntriesKit);
 
   if (selectedFiles == null) {
     // eslint-disable-next-line no-console
@@ -77,7 +77,10 @@ export default function Page(): ReactElement {
           <SeedDefWizard
             onSubmit={(newSeedDef) => {
               $seedDefWizard.set({});
-              $seedDefDraft.set([...$seedDefDraft.get(), newSeedDef]);
+              $seedDef4overviewDraft.set([
+                ...$seedDef4overviewDraft.get(),
+                { ...newSeedDef, isRoot: true as const },
+              ]);
 
               navigate("/seeds/new/overview");
             }}

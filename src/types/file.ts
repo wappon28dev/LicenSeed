@@ -5,3 +5,5 @@ export type FileTreeData = FileEntry & {
   relativePath: string;
   children: FileTreeData[] | null;
 };
+
+export type FileEntriesKit = { basePath: string; fileEntries: FileEntry[] };

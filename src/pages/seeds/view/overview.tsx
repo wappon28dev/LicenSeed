@@ -9,110 +9,38 @@ import { match } from "ts-pattern";
 import { Button } from "@/components/Button";
 import { ErrorScreen } from "@/components/ErrorScreen";
 import { FileTree } from "@/components/FileTree";
-import { MDPreview } from "@/components/MDPreview";
 import { Splitter } from "@/components/Splitter";
 import { SeedDefFileMetadataInput } from "@/components/seed/def/Metadata";
-import { SeedDefPreview } from "@/components/seed/def/Preview";
+import { Overview } from "@/components/seed/def/Overview";
 import { useNavigate } from "@/hooks/useNavigate";
 import { S } from "@/lib/consts";
-import { $hoveredPatterns, $selectedFiles } from "@/lib/stores/file-tree";
-import { $seedDefDraft } from "@/lib/stores/seed-def";
+import { $hoveredPatterns, $fileEntriesKit } from "@/lib/stores/file-tree";
+import { $seedDef4overviewDraft } from "@/lib/stores/seed-def";
 import { waitMs } from "@/lib/utils";
 import { fetchGroups } from "@/lib/utils/seed-base";
-import { importSeedDefFileKit } from "@/lib/utils/seed-def-file";
-import { type SeedBaseGroup, type SeedDefFileKit } from "@/types/bindings";
+import {
+  fetchRootAndChildrenSeedDefFileKit,
+  fetchSeedDefFileKit,
+} from "@/lib/utils/seed-def-file";
+import { type SeedBaseGroup } from "@/types/bindings";
+import { type FileEntriesKit } from "@/types/file";
+import { type SeedDefFileKit4overview } from "@/types/wizard";
 
-function Overview({
-  seedDefFileKit,
-  groups,
+function OverviewLoader({
+  fileEntriesKit,
 }: {
-  seedDefFileKit: SeedDefFileKit;
-  groups: SeedBaseGroup[];
+  fileEntriesKit: FileEntriesKit;
 }): ReactElement {
-  return (
-    <Resplit.Root
-      className={css({ w: "100%", h: "100%" })}
-      direction="horizontal"
-    >
-      <Resplit.Pane
-        className={css({ w: "100%", maxH: "100vh", overflowY: "auto" })}
-        initialSize="3fr"
-        order={0}
-      >
-        <VStack pr="1" px="0" w="100%">
-          <p.p
-            bg="white"
-            fontWeight="bold"
-            p="1"
-            position="sticky"
-            textAlign="left"
-            top="0"
-            w="100%"
-          >
-            シード一覧
-          </p.p>
-          {seedDefFileKit.seeds.map((s) => {
-            const group = groups.find((g) => g.manifest.group === s.group);
-            if (group == null) {
-              return (
-                <ErrorScreen
-                  key={s.title}
-                  error={`Base group not found: ${s.group}`}
-                  title="ベースシードの読み込み"
-                />
-              );
-            }
-
-            return (
-              <p.div
-                key={s.title}
-                _hover={{ bgColor: "blue.50" }}
-                h="100%"
-                onMouseEnter={() => {
-                  $hoveredPatterns.set(s.territory);
-                }}
-                onMouseLeave={() => {
-                  $hoveredPatterns.set([]);
-                }}
-                w="100%"
-              >
-                <SeedDefPreview
-                  seedDef={s}
-                  seedGroupManifest={group.manifest}
-                />
-              </p.div>
-            );
-          })}
-        </VStack>
-      </Resplit.Pane>
-      <Splitter />
-      <Resplit.Pane
-        className={css({ w: "100%", h: "100%" })}
-        initialSize="1fr"
-        order={2}
-      >
-        <p.p fontWeight="bold">ライセンス文</p.p>
-        <p.div>
-          <MDPreview
-            source={seedDefFileKit.licenseBody}
-            style={{ height: "calc(100vh - 40px)", overflowY: "auto" }}
-          />
-        </p.div>
-      </Resplit.Pane>
-    </Resplit.Root>
-  );
-}
-
-function OverviewLoader({ basePath }: { basePath: string }): ReactElement {
   const swrGroups = useSWRImmutable("seedDefFile", fetch);
 
   async function fetch(): Promise<{
     groups: SeedBaseGroup[];
-    seedDefFileKit: SeedDefFileKit;
+    seedDefFileKit4overview: SeedDefFileKit4overview;
   }> {
     return {
       groups: await fetchGroups(),
-      seedDefFileKit: await importSeedDefFileKit(basePath),
+      seedDefFileKit4overview:
+        await fetchRootAndChildrenSeedDefFileKit(fileEntriesKit),
     };
   }
 
@@ -125,8 +53,12 @@ function OverviewLoader({ basePath }: { basePath: string }): ReactElement {
         </VStack>
       </p.div>
     ))
-    .with(S.Success, ({ data: { groups, seedDefFileKit } }) => (
-      <Overview groups={groups} seedDefFileKit={seedDefFileKit} />
+    .with(S.Success, ({ data: { groups, seedDefFileKit4overview } }) => (
+      <Overview
+        groups={groups}
+        licenseBody={seedDefFileKit4overview.licenseBody}
+        seeds={seedDefFileKit4overview.seeds}
+      />
     ))
     .otherwise(({ error }) => (
       <ErrorScreen error={error} title="ベースシードの読み込み" />
@@ -140,7 +72,7 @@ function SeedDefFileMetadataInputLoader({
 }): ReactElement {
   const swrSeedDefFileKit = useSWRImmutable(
     "seedDefFileKit",
-    async () => await importSeedDefFileKit(basePath),
+    async () => await fetchSeedDefFileKit(basePath),
   );
 
   return match(swrSeedDefFileKit)
@@ -161,29 +93,29 @@ function SeedDefFileMetadataInputLoader({
 }
 
 export default function Page(): ReactElement {
-  const selectedFiles = useStore($selectedFiles);
+  const fileEntriesKit = useStore($fileEntriesKit);
   const navigate = useNavigate();
 
-  if (selectedFiles == null) {
+  if (fileEntriesKit == null) {
     // eslint-disable-next-line no-console
-    console.error("`selectedFile` is null; Redirecting to `/seeds/view`");
+    console.error("`fileEntriesKit` is null; Redirecting to `/seeds/view`");
     document.location.href = "/seeds/view";
     return (
       <ErrorScreen
-        error="`selectedFile` is null; Redirecting to `/seeds/view`"
+        error="`fileEntriesKit` is null; Redirecting to `/seeds/view`"
         title="サマリーのオーバービューの読み込み"
       />
     );
   }
 
-  const { basePath, fileEntries } = selectedFiles;
-  const seedDefDraft = useStore($seedDefDraft);
+  const { basePath, fileEntries } = fileEntriesKit;
+  const seedDef4overviewDraft = useStore($seedDef4overviewDraft);
   const hoveredPatterns = useStore($hoveredPatterns);
 
   const patterns =
     hoveredPatterns.length > 0
       ? hoveredPatterns
-      : seedDefDraft.map((s) => s.territory).flat();
+      : seedDef4overviewDraft.map((s) => s.territory).flat();
 
   return (
     <p.div h="100%" p="1" w="100%">
@@ -219,12 +151,12 @@ export default function Page(): ReactElement {
               onClick={() => {
                 navigate("/");
                 void waitMs(100).then(() => {
-                  $selectedFiles.set(undefined);
+                  $fileEntriesKit.set(undefined);
                 });
               }}
               variant="outline"
             >
-              <p.p>ホームへ戻る</p.p>
+              <p.p>ホームへ</p.p>
             </Button>
           </HStack>
         </Resplit.Pane>
@@ -234,7 +166,7 @@ export default function Page(): ReactElement {
           initialSize="5fr"
           order={2}
         >
-          <OverviewLoader basePath={basePath} />
+          <OverviewLoader fileEntriesKit={fileEntriesKit} />
         </Resplit.Pane>
       </Resplit.Root>
     </p.div>

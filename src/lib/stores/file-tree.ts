@@ -1,8 +1,7 @@
 import { atom } from "nanostores";
-import { type FileEntry } from "@/types/bindings";
+import { type FileEntriesKit } from "@/types/file";
 import { type Nullable } from "@/types/utils";
 
-export const $selectedFiles =
-  atom<Nullable<{ basePath: string; fileEntries: FileEntry[] }>>(undefined);
+export const $fileEntriesKit = atom<Nullable<FileEntriesKit>>(undefined);
 
 export const $hoveredPatterns = atom<string[]>([]);

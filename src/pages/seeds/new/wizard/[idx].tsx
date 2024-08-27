@@ -10,14 +10,14 @@ import { ErrorScreen } from "@/components/ErrorScreen";
 import { FileTree } from "@/components/FileTree";
 import { Splitter } from "@/components/Splitter";
 import { useNavigate } from "@/hooks/useNavigate";
-import { $selectedFiles } from "@/lib/stores/file-tree";
-import { $seedDefDraft, $seedDefWizard } from "@/lib/stores/seed-def";
+import { $fileEntriesKit } from "@/lib/stores/file-tree";
+import { $seedDef4overviewDraft, $seedDefWizard } from "@/lib/stores/seed-def";
 import { useParams } from "@/router";
 
 function Loaded({ idx }: { idx: number }): ReactElement {
-  const selectedFiles = useStore($selectedFiles);
+  const fileEntriesKit = useStore($fileEntriesKit);
 
-  if (selectedFiles == null) {
+  if (fileEntriesKit == null) {
     // eslint-disable-next-line no-console
     console.error("`selectedFile` is null; Redirecting to `/seeds/new`");
     document.location.href = "/seeds/new";
@@ -29,7 +29,7 @@ function Loaded({ idx }: { idx: number }): ReactElement {
     );
   }
 
-  const { basePath, fileEntries } = selectedFiles;
+  const { basePath, fileEntries } = fileEntriesKit;
   const seedDefWizard = useStore($seedDefWizard);
   const navigate = useNavigate();
 
@@ -70,11 +70,11 @@ function Loaded({ idx }: { idx: number }): ReactElement {
         >
           <SeedDefWizard
             onSubmit={(newSeedDef) => {
-              const next = [...$seedDefDraft.get()];
-              next[idx] = newSeedDef;
+              const next = [...$seedDef4overviewDraft.get()];
+              next[idx] = { ...newSeedDef, isRoot: true as const };
 
               $seedDefWizard.set({});
-              $seedDefDraft.set(next);
+              $seedDef4overviewDraft.set(next);
 
               navigate("/seeds/new/overview");
             }}
@@ -87,12 +87,12 @@ function Loaded({ idx }: { idx: number }): ReactElement {
 }
 
 export default function Page(): ReactElement {
-  const seedDefDraft = useStore($seedDefDraft);
+  const seedDef4overviewDraft = useStore($seedDef4overviewDraft);
   const { idx } = useParams("/seeds/new/wizard/:idx");
   const parseResult = z
     .preprocess(
       (v) => Number(v),
-      z.number().int().min(0).max(seedDefDraft.length),
+      z.number().int().min(0).max(seedDef4overviewDraft.length),
     )
     .safeParse(idx);
 
@@ -110,7 +110,7 @@ export default function Page(): ReactElement {
       );
     })
     .with({ success: true }, ({ data }) => {
-      const seedDef = seedDefDraft.at(data);
+      const seedDef = seedDef4overviewDraft.at(data);
       if (seedDef == null) {
         return (
           <ErrorScreen
