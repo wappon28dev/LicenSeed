@@ -9,7 +9,8 @@ export type Path =
   | `/seeds/new/overview`
   | `/seeds/new/wizard`
   | `/seeds/new/wizard/:idx`
-  | `/viewer`
+  | `/seeds/view`
+  | `/seeds/view/overview`
 
 export type Params = {
   '/seeds/new/wizard/:idx': { idx: string }

@@ -12,9 +12,11 @@ import { type SeedBaseGroupManifest, type SeedDef } from "@/types/bindings";
 export function SeedDefPreview({
   seedDef,
   seedGroupManifest,
+  isEditable = false,
 }: {
   seedDef: SeedDef;
   seedGroupManifest: SeedBaseGroupManifest;
+  isEditable?: boolean;
 }): ReactElement {
   const { data, group, summary, territory, title } = seedDef;
   const idx = $seedDefDraft.get().indexOf(seedDef);
@@ -70,6 +72,9 @@ export function SeedDefPreview({
               _hover: { bg: "gray.100" },
             },
           })}
+          style={{
+            display: isEditable ? "flex" : "none",
+          }}
         >
           <p.button
             onClick={() => {

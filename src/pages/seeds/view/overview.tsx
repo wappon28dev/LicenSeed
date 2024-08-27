@@ -2,7 +2,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { useStore } from "@nanostores/react";
 import { css } from "panda/css";
 import { Divider, HStack, VStack, styled as p } from "panda/jsx";
-import { useMemo, useState, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import useSWRImmutable from "swr/immutable";
 import { match } from "ts-pattern";
@@ -18,50 +18,16 @@ import { $hoveredPatterns, $selectedFiles } from "@/lib/stores/file-tree";
 import { $seedDefDraft } from "@/lib/stores/seed-def";
 import { waitMs } from "@/lib/utils";
 import { fetchGroups } from "@/lib/utils/seed-base";
-import { generateLicenseTextFromSeedDef } from "@/lib/utils/seed-def";
-import { exportSeedDefFile } from "@/lib/utils/seed-def-file";
-import { type SeedBaseGroup } from "@/types/bindings";
+import { importSeedDefFileKit } from "@/lib/utils/seed-def-file";
+import { type SeedBaseGroup, type SeedDefFileKit } from "@/types/bindings";
 
-function Overview({ groups }: { groups: SeedBaseGroup[] }): ReactElement {
-  const seedDefDraft = useStore($seedDefDraft);
-  const navigate = useNavigate();
-
-  const licenseText = useMemo(
-    () =>
-      seedDefDraft
-        .map((s) => {
-          const group = groups.find((g) => g.manifest.group === s.group);
-
-          if (group == null)
-            throw new Error(`Base group not found: ${s.group}`);
-
-          return generateLicenseTextFromSeedDef(s, group);
-        })
-        .join("\n\n---\n\n"),
-    [seedDefDraft],
-  );
-
-  if (seedDefDraft.length === 0) {
-    return (
-      <p.div display="grid" h="100%" placeItems="center" w="100%">
-        <VStack>
-          <Icon height="1.5rem" icon="mdi:seed-plus" />
-          <p.p>まずはシードを追加してみましょう！</p.p>
-          <Button
-            icon="mdi:add"
-            m="2"
-            onClick={() => {
-              navigate("/seeds/new/wizard");
-            }}
-            variant="filled"
-          >
-            <p.p>シードを追加</p.p>
-          </Button>
-        </VStack>
-      </p.div>
-    );
-  }
-
+function Overview({
+  seedDefFileKit,
+  groups,
+}: {
+  seedDefFileKit: SeedDefFileKit;
+  groups: SeedBaseGroup[];
+}): ReactElement {
   return (
     <Resplit.Root
       className={css({ w: "100%", h: "100%" })}
@@ -84,7 +50,7 @@ function Overview({ groups }: { groups: SeedBaseGroup[] }): ReactElement {
           >
             シード一覧
           </p.p>
-          {seedDefDraft.map((s) => {
+          {seedDefFileKit.seeds.map((s) => {
             const group = groups.find((g) => g.manifest.group === s.group);
             if (group == null) {
               return (
@@ -110,23 +76,12 @@ function Overview({ groups }: { groups: SeedBaseGroup[] }): ReactElement {
                 w="100%"
               >
                 <SeedDefPreview
-                  isEditable
                   seedDef={s}
                   seedGroupManifest={group.manifest}
                 />
               </p.div>
             );
           })}
-          <Button
-            icon="mdi:add"
-            m="2"
-            onClick={() => {
-              navigate("/seeds/new/wizard");
-            }}
-            variant="filled"
-          >
-            <p.p>シードを追加</p.p>
-          </Button>
         </VStack>
       </Resplit.Pane>
       <Splitter />
@@ -135,10 +90,10 @@ function Overview({ groups }: { groups: SeedBaseGroup[] }): ReactElement {
         initialSize="1fr"
         order={2}
       >
-        <p.p fontWeight="bold">生成されるライセンス文</p.p>
+        <p.p fontWeight="bold">ライセンス文</p.p>
         <p.div>
           <MDPreview
-            source={licenseText}
+            source={seedDefFileKit.licenseBody}
             style={{ height: "calc(100vh - 40px)", overflowY: "auto" }}
           />
         </p.div>
@@ -147,8 +102,18 @@ function Overview({ groups }: { groups: SeedBaseGroup[] }): ReactElement {
   );
 }
 
-function OverviewLoader(): ReactElement {
-  const swrGroups = useSWRImmutable("groups", fetchGroups);
+function OverviewLoader({ basePath }: { basePath: string }): ReactElement {
+  const swrGroups = useSWRImmutable("seedDefFile", fetch);
+
+  async function fetch(): Promise<{
+    groups: SeedBaseGroup[];
+    seedDefFileKit: SeedDefFileKit;
+  }> {
+    return {
+      groups: await fetchGroups(),
+      seedDefFileKit: await importSeedDefFileKit(basePath),
+    };
+  }
 
   return match(swrGroups)
     .with(S.Loading, () => (
@@ -159,75 +124,8 @@ function OverviewLoader(): ReactElement {
         </VStack>
       </p.div>
     ))
-    .with(S.Success, ({ data }) => <Overview groups={data} />)
-    .otherwise(({ error }) => (
-      <ErrorScreen error={error} title="ベースシードの読み込み" />
-    ));
-}
-
-function ExportButton({ basePath }: { basePath: string }): ReactElement {
-  const swrGroups = useSWRImmutable("groups", fetchGroups);
-  const seedDefDraft = useStore($seedDefDraft);
-  const [exportStatus, setExportStatus] = useState<
-    "READY" | "LOADING" | "DONE" | "ERROR"
-  >("READY");
-
-  function handleClick(groups: SeedBaseGroup[]): void {
-    const licenseText = seedDefDraft
-      .map((s) => {
-        const group = groups.find((g) => g.manifest.group === s.group);
-
-        if (group == null) throw new Error(`Base group not found: ${s.group}`);
-
-        return generateLicenseTextFromSeedDef(s, group);
-      })
-      .join("\n\n---\n\n");
-
-    setExportStatus("LOADING");
-
-    void exportSeedDefFile(basePath, seedDefDraft, licenseText).match(
-      () => {
-        setExportStatus("DONE");
-        void waitMs(2000).then(() => {
-          setExportStatus("READY");
-        });
-      },
-      (e) => {
-        setExportStatus("ERROR");
-        throw e;
-      },
-    );
-  }
-
-  return match(swrGroups)
-    .with(S.Loading, () => <p.div />)
-    .with(S.Success, ({ data }) => (
-      <Button
-        baseColor="green"
-        disabled={
-          seedDefDraft.length === 0 ||
-          exportStatus === "LOADING" ||
-          exportStatus === "DONE"
-        }
-        icon={match(exportStatus)
-          .with("READY", () => "mdi:seed")
-          .with("LOADING", () => "svg-spinners:ring-resize")
-          .with("DONE", () => "mdi:check")
-          .with("ERROR", () => "mdi:alert")
-          .exhaustive()}
-        onClick={() => {
-          handleClick(data);
-        }}
-      >
-        <p.p>
-          {match(exportStatus)
-            .with("READY", () => "付与")
-            .with("LOADING", () => "付与中...")
-            .with("DONE", () => "付与完了")
-            .with("ERROR", () => "付与失敗")
-            .exhaustive()}
-        </p.p>
-      </Button>
+    .with(S.Success, ({ data: { groups, seedDefFileKit } }) => (
+      <Overview groups={groups} seedDefFileKit={seedDefFileKit} />
     ))
     .otherwise(({ error }) => (
       <ErrorScreen error={error} title="ベースシードの読み込み" />
@@ -240,11 +138,11 @@ export default function Page(): ReactElement {
 
   if (selectedFiles == null) {
     // eslint-disable-next-line no-console
-    console.error("`selectedFile` is null; Redirecting to `/seeds/new`");
-    document.location.href = "/seeds/new";
+    console.error("`selectedFile` is null; Redirecting to `/seeds/view`");
+    document.location.href = "/seeds/view";
     return (
       <ErrorScreen
-        error="`selectedFile` is null; Redirecting to `/seeds/new`"
+        error="`selectedFile` is null; Redirecting to `/seeds/view`"
         title="サマリーのオーバービューの読み込み"
       />
     );
@@ -298,7 +196,6 @@ export default function Page(): ReactElement {
             >
               <p.p>ホームへ戻る</p.p>
             </Button>
-            <ExportButton basePath={basePath} />
           </HStack>
         </Resplit.Pane>
         <Splitter />
@@ -307,7 +204,7 @@ export default function Page(): ReactElement {
           initialSize="5fr"
           order={2}
         >
-          <OverviewLoader />
+          <OverviewLoader basePath={basePath} />
         </Resplit.Pane>
       </Resplit.Root>
     </p.div>

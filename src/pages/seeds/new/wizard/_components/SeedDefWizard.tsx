@@ -8,7 +8,7 @@ import { token } from "panda/tokens";
 import { type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import { match, P } from "ts-pattern";
-import { FilePatternsInput } from "./FileSelect";
+import { FilePatternsInput } from "../../../../../components/FileSelect";
 import { SeedConfig } from "./SeedConfig";
 import { SeedDefTypeSelector } from "./SeedDefTypeSelector";
 import { SeedGroupSelector } from "./SeedGroupSelector";

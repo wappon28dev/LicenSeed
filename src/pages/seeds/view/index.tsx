@@ -1,8 +1,8 @@
 import { styled as p } from "panda/jsx";
 import { useEffect, type ReactElement } from "react";
-import { FileSelectionReady } from "../../../components/FileSelect";
+import { FileSelectionReady } from "@/components/FileSelect";
 import { useFileSelection } from "@/hooks/file-selection";
-import { useNavigate } from "@/hooks/useNavigate.ts";
+import { useNavigate } from "@/hooks/useNavigate";
 import { $selectedFiles } from "@/lib/stores/file-tree";
 
 export default function Page(): ReactElement {
@@ -17,7 +17,7 @@ export default function Page(): ReactElement {
         basePath,
         fileEntries,
       });
-      navigate("/seeds/new/overview");
+      navigate("/seeds/view/overview");
     }
   }, [basePath, fileEntries]);
 

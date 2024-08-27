@@ -4,7 +4,11 @@ import { calcHash } from "./hash";
 import { INFO } from "@/lib/config";
 import { T } from "@/lib/consts";
 import { api } from "@/lib/services/api";
-import { type SeedDef, type SeedDefFile } from "@/types/bindings";
+import {
+  type SeedDefFileKit,
+  type SeedDef,
+  type SeedDefFile,
+} from "@/types/bindings";
 import { zSeedDefFile } from "@/types/bindings.schema";
 
 export function exportSeedDefFile(
@@ -38,4 +42,25 @@ export function exportSeedDefFile(
       )
       .exhaustive(),
   );
+}
+
+export async function importSeedDefFileKit(
+  basePath: string,
+): Promise<SeedDefFileKit> {
+  return match(await api.readSeedDef(basePath))
+    .with(T.Ok, ({ data }) => {
+      const { licenseBody, licenseHash } = data;
+      const hash = calcHash(licenseBody);
+
+      if (hash !== licenseHash) {
+        throw new Error("ライセンスのハッシュが一致しません");
+      }
+
+      return data;
+    })
+    .otherwise(({ error }) => {
+      throw new Error("シードファイルの読み込みに失敗しました", {
+        cause: error,
+      });
+    });
 }
