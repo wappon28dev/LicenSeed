@@ -1,9 +1,10 @@
 import { styled as p } from "panda/jsx";
 import { useEffect, type ReactElement } from "react";
-import { FileSelectionReady } from "../../../components/FileSelect";
+import { FileSelectionReady } from "@/components/FileSelect";
 import { useFileSelection } from "@/hooks/file-selection";
 import { useNavigate } from "@/hooks/useNavigate.ts";
 import { $selectedFiles } from "@/lib/stores/file-tree";
+import { $seedDefFileUserMetadata } from "@/lib/stores/seed-def";
 
 export default function Page(): ReactElement {
   const { basePath, selectDir, fileEntries } = useFileSelection(
@@ -17,6 +18,7 @@ export default function Page(): ReactElement {
         basePath,
         fileEntries,
       });
+      $seedDefFileUserMetadata.set({});
       navigate("/seeds/new/overview");
     }
   }, [basePath, fileEntries]);

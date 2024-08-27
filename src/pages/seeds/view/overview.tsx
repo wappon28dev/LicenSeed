@@ -11,6 +11,7 @@ import { ErrorScreen } from "@/components/ErrorScreen";
 import { FileTree } from "@/components/FileTree";
 import { MDPreview } from "@/components/MDPreview";
 import { Splitter } from "@/components/Splitter";
+import { SeedDefFileMetadataInput } from "@/components/seed/def/Metadata";
 import { SeedDefPreview } from "@/components/seed/def/Preview";
 import { useNavigate } from "@/hooks/useNavigate";
 import { S } from "@/lib/consts";
@@ -132,6 +133,33 @@ function OverviewLoader({ basePath }: { basePath: string }): ReactElement {
     ));
 }
 
+function SeedDefFileMetadataInputLoader({
+  basePath,
+}: {
+  basePath: string;
+}): ReactElement {
+  const swrSeedDefFileKit = useSWRImmutable(
+    "seedDefFileKit",
+    async () => await importSeedDefFileKit(basePath),
+  );
+
+  return match(swrSeedDefFileKit)
+    .with(S.Loading, () => (
+      <p.div display="grid" h="100%" placeItems="center" w="100%">
+        <VStack>
+          <Icon height="2em" icon="svg-spinners:ring-resize" />
+          メタデータを読み込み中...
+        </VStack>
+      </p.div>
+    ))
+    .with(S.Success, ({ data }) => (
+      <SeedDefFileMetadataInput metadata={data.metadata} />
+    ))
+    .otherwise(({ error }) => (
+      <ErrorScreen error={error} title="メタデータの読み込み" />
+    ));
+}
+
 export default function Page(): ReactElement {
   const selectedFiles = useStore($selectedFiles);
   const navigate = useNavigate();
@@ -174,13 +202,15 @@ export default function Page(): ReactElement {
           initialSize="1fr"
           order={0}
         >
-          <p.div h="100%" maxH="calc(100vh - 70px)" w="100%">
+          <p.div h="100%" maxH="calc(100vh - 260px)" w="100%">
             <FileTree
               basePath={basePath}
               fileEntries={fileEntries}
               patterns={patterns}
             />
           </p.div>
+          <Divider />
+          <SeedDefFileMetadataInputLoader basePath={basePath} />
           <Divider />
           <HStack justify="space-between" p="2">
             <Button

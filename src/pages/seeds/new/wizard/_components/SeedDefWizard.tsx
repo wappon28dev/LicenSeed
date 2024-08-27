@@ -8,12 +8,12 @@ import { token } from "panda/tokens";
 import { type ReactElement } from "react";
 import { Resplit } from "react-resplit";
 import { match, P } from "ts-pattern";
-import { FilePatternsInput } from "../../../../../components/FileSelect";
 import { SeedConfig } from "./SeedConfig";
 import { SeedDefTypeSelector } from "./SeedDefTypeSelector";
 import { SeedGroupSelector } from "./SeedGroupSelector";
 import { SeedPreview } from "./SeedPreview";
 import { Button } from "@/components/Button";
+import { FilePatternsInput } from "@/components/FileSelect";
 import { MDPreview } from "@/components/MDPreview";
 import { Splitter } from "@/components/Splitter";
 import { Hint } from "@/components/seed/SummaryEntry";
@@ -27,11 +27,10 @@ import {
   askSeedAdviceWithCustom,
   askSeedAdviceWithFork,
 } from "@/lib/utils/seed";
-import { type SeedBaseGroup } from "@/types/bindings";
+import { type SeedDef, type SeedBaseGroup } from "@/types/bindings";
 import { zSeedBaseGroup } from "@/types/bindings.schema";
 import {
   type SeedCheckData,
-  type SeedDefWizard,
   type SeedDefWizardWith,
   zSeedDefWizardParse,
 } from "@/types/wizard";
@@ -356,7 +355,7 @@ export function SeedDefWizard({
   onSubmit,
 }: {
   variant: "NEW" | "EDIT";
-  onSubmit: (newSeedDefWizard: SeedDefWizard) => void;
+  onSubmit: (newSeedDef: SeedDef) => void;
 }): ReactElement {
   const seedDefWizard = useStore($seedDefWizard);
   const navigate = useNavigate();

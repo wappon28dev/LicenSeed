@@ -2,11 +2,15 @@ import { persistentAtom } from "@nanostores/persistent";
 import { atom } from "nanostores";
 import { match } from "ts-pattern";
 import { getLocalStorageKey } from "@/lib/consts";
+import { type SeedDefFileUserMetadata } from "@/lib/utils/seed-def-file";
 import { type SeedDef, type SeedBaseGroup } from "@/types/bindings";
 import { type Nullable } from "@/types/utils";
 import { type SeedCheckData, type SeedDefWizardPartial } from "@/types/wizard";
 
 export const $seedDefDraft = atom<SeedDef[]>([]);
+export const $seedDefFileUserMetadata = atom<Partial<SeedDefFileUserMetadata>>(
+  {},
+);
 export const $seedDefWizard = persistentAtom<SeedDefWizardPartial>(
   getLocalStorageKey("seedDefWizard"),
   {},

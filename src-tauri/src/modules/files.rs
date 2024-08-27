@@ -15,7 +15,7 @@ pub struct FileEntry {
 
 #[derive(Serialize, Type)]
 #[serde(rename_all = "camelCase")]
-pub struct FsMetaData {
+pub struct FsMetadata {
     is_dir: bool,
     is_file: bool,
     len: i32,
@@ -30,9 +30,9 @@ fn system_time_to_unix_time(time: time::SystemTime) -> Option<i32> {
         .map(|d| d.as_secs() as i32)
 }
 
-impl From<fs::Metadata> for FsMetaData {
+impl From<fs::Metadata> for FsMetadata {
     fn from(metadata: fs::Metadata) -> Self {
-        FsMetaData {
+        FsMetadata {
             is_dir: metadata.is_dir(),
             is_file: metadata.is_file(),
             len: metadata.len() as i32,
@@ -93,7 +93,7 @@ pub fn collect_file_entries(input: String) -> Result<Vec<FileEntry>, String> {
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_fs_metadata(input: String) -> Result<FsMetaData, String> {
+pub fn get_fs_metadata(input: String) -> Result<FsMetadata, String> {
     info!("Reading metadata from: {}", input);
 
     let target_path = path::Path::new(&input);

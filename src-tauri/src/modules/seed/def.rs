@@ -47,9 +47,16 @@ struct SeedDef {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
+struct SeedDefFileMetadata {
+    title: String,
+    sow_date: String,
+    version: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct SeedDefFile {
-    version: String,
+    metadata: SeedDefFileMetadata,
     seeds: Vec<SeedDef>,
     license_hash: String,
 }

@@ -11,15 +11,19 @@ import { ErrorScreen } from "@/components/ErrorScreen";
 import { FileTree } from "@/components/FileTree";
 import { MDPreview } from "@/components/MDPreview";
 import { Splitter } from "@/components/Splitter";
+import { SeedDefFileMetadataInput } from "@/components/seed/def/Metadata";
 import { SeedDefPreview } from "@/components/seed/def/Preview";
 import { useNavigate } from "@/hooks/useNavigate";
 import { S } from "@/lib/consts";
 import { $hoveredPatterns, $selectedFiles } from "@/lib/stores/file-tree";
-import { $seedDefDraft } from "@/lib/stores/seed-def";
+import { $seedDefDraft, $seedDefFileUserMetadata } from "@/lib/stores/seed-def";
 import { waitMs } from "@/lib/utils";
 import { fetchGroups } from "@/lib/utils/seed-base";
 import { generateLicenseTextFromSeedDef } from "@/lib/utils/seed-def";
-import { exportSeedDefFile } from "@/lib/utils/seed-def-file";
+import {
+  exportSeedDefFile,
+  getSeedDefFileNonUserMetadata,
+} from "@/lib/utils/seed-def-file";
 import { type SeedBaseGroup } from "@/types/bindings";
 
 function Overview({ groups }: { groups: SeedBaseGroup[] }): ReactElement {
@@ -171,6 +175,7 @@ function ExportButton({ basePath }: { basePath: string }): ReactElement {
   const [exportStatus, setExportStatus] = useState<
     "READY" | "LOADING" | "DONE" | "ERROR"
   >("READY");
+  const seedDefFileUserMetadata = useStore($seedDefFileUserMetadata);
 
   function handleClick(groups: SeedBaseGroup[]): void {
     const licenseText = seedDefDraft
@@ -185,7 +190,12 @@ function ExportButton({ basePath }: { basePath: string }): ReactElement {
 
     setExportStatus("LOADING");
 
-    void exportSeedDefFile(basePath, seedDefDraft, licenseText).match(
+    void exportSeedDefFile(
+      basePath,
+      seedDefDraft,
+      seedDefFileUserMetadata,
+      licenseText,
+    ).match(
       () => {
         setExportStatus("DONE");
         void waitMs(2000).then(() => {
@@ -197,13 +207,17 @@ function ExportButton({ basePath }: { basePath: string }): ReactElement {
         throw e;
       },
     );
+
+    void waitMs(5000).then(() => {
+      setExportStatus("READY");
+    });
   }
 
   return match(swrGroups)
     .with(S.Loading, () => <p.div />)
     .with(S.Success, ({ data }) => (
       <Button
-        baseColor="green"
+        baseColor={exportStatus === "ERROR" ? "red" : "green"}
         disabled={
           seedDefDraft.length === 0 ||
           exportStatus === "LOADING" ||
@@ -253,6 +267,7 @@ export default function Page(): ReactElement {
   const { basePath, fileEntries } = selectedFiles;
   const seedDefDraft = useStore($seedDefDraft);
   const hoveredPatterns = useStore($hoveredPatterns);
+  const seedDefFileMetadata = useStore($seedDefFileUserMetadata);
 
   const patterns =
     hoveredPatterns.length > 0
@@ -276,13 +291,21 @@ export default function Page(): ReactElement {
           initialSize="1fr"
           order={0}
         >
-          <p.div h="100%" maxH="calc(100vh - 70px)" w="100%">
+          <p.div h="100%" maxH="calc(100vh - 260px)" w="100%">
             <FileTree
               basePath={basePath}
               fileEntries={fileEntries}
               patterns={patterns}
             />
           </p.div>
+          <Divider />
+          <SeedDefFileMetadataInput
+            isEditable
+            metadata={{
+              ...getSeedDefFileNonUserMetadata(),
+              ...seedDefFileMetadata,
+            }}
+          />
           <Divider />
           <HStack justify="space-between" p="2">
             <Button

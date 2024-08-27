@@ -5,27 +5,25 @@ import { type SeedDef, type SeedData } from "./bindings";
 import { zSeedData, zSeedDef } from "./bindings.schema";
 import { type OmitStrict, type Override } from "./utils";
 
-export type SeedDefWizard = SeedDef;
-
 export type SeedDefWizardPartial = Override<
-  Partial<SeedDefWizard>,
+  Partial<SeedDef>,
   {
     data?: Partial<SeedData>;
   }
 >;
 
 export type SeedDefWizardWith<T extends SeedData["type"]> = OmitStrict<
-  SeedDefWizard,
+  SeedDef,
   "data"
 > & {
-  data: Extract<SeedDefWizard["data"], { type: T }>;
+  data: Extract<SeedDef["data"], { type: T }>;
 };
 
 export type SeedDefWizardPartialWith<T extends SeedData["type"]> = OmitStrict<
   SeedDefWizardPartial,
   "data"
 > & {
-  data?: Partial<Extract<SeedDefWizard["data"], { type: T }>>;
+  data?: Partial<Extract<SeedDef["data"], { type: T }>>;
 };
 
 export type SeedCheckData = {
@@ -43,7 +41,7 @@ export type SeedCheckData = {
 // overload
 export function zSeedDefWizardParse(
   seedDefWizard: SeedDefWizardPartial,
-): Result<SeedDefWizard, ZodError>;
+): Result<SeedDef, ZodError>;
 export function zSeedDefWizardParse<T extends SeedData["type"]>(
   seedDefWizard: SeedDefWizardPartial,
 ): Result<SeedDefWizardWith<T>, ZodError>;
@@ -51,7 +49,7 @@ export function zSeedDefWizardParse<T extends SeedData["type"]>(
 // implementation
 export function zSeedDefWizardParse<T extends SeedData["type"]>(
   seedDefWizard: SeedDefWizardPartial,
-): Result<SeedDefWizard | SeedDefWizardWith<T>, ZodError> {
+): Result<SeedDef | SeedDefWizardWith<T>, ZodError> {
   return match(
     z
       .object({

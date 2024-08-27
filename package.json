@@ -29,6 +29,7 @@
     "@tauri-apps/plugin-dialog": "^2.0.0-rc.0",
     "@tauri-apps/plugin-shell": ">=2.0.0-rc.0",
     "@uiw/react-md-editor": "^4.0.4",
+    "crypto-js": "^4.2.0",
     "envsafe": "^2.0.3",
     "lorem-ipsum": "^2.0.8",
     "nanostores": "^0.10.3",

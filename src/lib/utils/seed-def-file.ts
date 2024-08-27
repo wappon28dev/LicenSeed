@@ -8,19 +8,49 @@ import {
   type SeedDefFileKit,
   type SeedDef,
   type SeedDefFile,
+  type SeedDefFileMetadata,
 } from "@/types/bindings";
-import { zSeedDefFile } from "@/types/bindings.schema";
+import { zSeedDefFile, zSeedDefFileMetadata } from "@/types/bindings.schema";
+import { type OmitStrict } from "@/types/utils";
+
+export type SeedDefFileUserMetadata = OmitStrict<
+  SeedDefFileMetadata,
+  "version" | "sow_date"
+>;
+
+export function getSeedDefFileNonUserMetadata(): Pick<
+  SeedDefFileMetadata,
+  "version" | "sow_date"
+> {
+  return {
+    version: INFO.seedVersion.toString(),
+    sow_date: new Date().toISOString(),
+  };
+}
 
 export function exportSeedDefFile(
   basePath: string,
   seedDefDraft: SeedDef[],
+  seedDefFileUserMetadata: Partial<SeedDefFileUserMetadata>,
   licenseBody: string,
 ): ResultAsync<undefined, Error> {
   const hash = calcHash(licenseBody);
 
+  const metadata = match(
+    zSeedDefFileMetadata.safeParse({
+      ...seedDefFileUserMetadata,
+      version: INFO.seedVersion.toString(),
+      sow_date: new Date().toISOString(),
+    }),
+  )
+    .with({ success: true }, ({ data }) => data)
+    .otherwise(({ error }) => {
+      throw new Error("メタデータのパースに失敗しました", { cause: error });
+    });
+
   const seedDefFile = {
     seeds: seedDefDraft,
-    version: INFO.seedVersion.toString(),
+    metadata,
     licenseHash: hash,
   } as const satisfies SeedDefFile;
 
