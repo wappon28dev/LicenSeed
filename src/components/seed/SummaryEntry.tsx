@@ -3,7 +3,7 @@ import * as HoverCard from "@radix-ui/react-hover-card";
 import { css } from "panda/css";
 import { HStack, styled as p, VStack } from "panda/jsx";
 import { type ReactNode, type ReactElement } from "react";
-import { MDPreview } from "../MDPreview";
+import { MDPreview } from "@/components/MDPreview";
 import { searchTermEntryFromKey } from "@/lib/utils/seed-base";
 import {
   type SummaryEntry,
@@ -148,7 +148,37 @@ export function DisplaySummaryEntry({
   );
 
   if (termEntry == null) {
-    return <p.li>?</p.li>;
+    return (
+      <p.li>
+        <HStack
+          alignItems="center"
+          bg="red"
+          color="white"
+          justifyContent="space-between"
+          pl="1"
+        >
+          <p.p>
+            [エントリーキー <p.code>{summaryEntry.key}</p.code>{" "}
+            が見つかりません！]
+          </p.p>
+          <HStack>
+            <p.p
+              bg="white"
+              color="gray.500"
+              cursor="help"
+              fontSize="2xs"
+              p="0.5"
+              px="1"
+              rounded="sm"
+              textTransform="uppercase"
+            >
+              term
+            </p.p>
+            <Icon cursor="help" icon="mdi:alert-outline" />
+          </HStack>
+        </HStack>
+      </p.li>
+    );
   }
 
   return <DisplaySummaryEntryTerm termEntry={termEntry} />;
