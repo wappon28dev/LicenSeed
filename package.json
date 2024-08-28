@@ -7,12 +7,14 @@
     "prepare": "panda codegen && bun run gen:schema",
     "vite": "dotenvx run -- vite",
     "dev": "bun run vite",
+    "prebuild": "bun run add:ts-nocheck",
     "build": "tsc && bun run vite build",
     "preview": "bun run vite preview",
     "tauri": "tauri",
     "fmt": "prettier --write ./src/",
     "lint": "eslint --ext .ts,.tsx ./src",
-    "gen:schema": "bun run scripts/gen-schema-from-types.ts"
+    "gen:schema": "bun run scripts/gen-schema-from-types.ts",
+    "add:ts-nocheck": "bun run scripts/add-ts-nocheck.ts"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.7.0",
