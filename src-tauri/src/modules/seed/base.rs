@@ -18,41 +18,41 @@ pub struct Variable {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
-struct TermEntry {
-    description: String,
-    label: String,
+pub struct TermEntry {
+    pub description: String,
+    pub label: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
-struct Terms {
-    permissions: HashMap<String, TermEntry>,
-    conditions: HashMap<String, TermEntry>,
-    limitations: HashMap<String, TermEntry>,
-    notes: Option<HashMap<String, TermEntry>>,
+pub struct Terms {
+    pub permissions: HashMap<String, TermEntry>,
+    pub conditions: HashMap<String, TermEntry>,
+    pub limitations: HashMap<String, TermEntry>,
+    pub notes: Option<HashMap<String, TermEntry>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct SeedBase {
-    id: String,
-    name: String,
-    description: String,
-    summary: Summary,
-    variables: Vec<Variable>,
-    body: String,
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub summary: Summary,
+    pub variables: Vec<Variable>,
+    pub body: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct SeedBaseGroupManifest {
-    group: String,
-    name: String,
-    description: String,
-    terms: Terms,
+    pub group: String,
+    pub name: String,
+    pub description: String,
+    pub terms: Terms,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct SeedBaseGroup {
-    manifest: SeedBaseGroupManifest,
-    bases: Vec<SeedBase>,
+    pub manifest: SeedBaseGroupManifest,
+    pub bases: Vec<SeedBase>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -107,8 +107,6 @@ pub fn get_seed_base(handle: tauri::AppHandle, id: String) -> Result<SeedBase, G
             error: e.to_string(),
         }
     })?;
-
-    debug!("-> Seed base: {:?}", seed_base);
 
     Ok(seed_base)
 }

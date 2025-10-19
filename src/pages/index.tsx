@@ -45,6 +45,14 @@ export default function Page(): ReactElement {
           <Icon height="2em" icon="mdi:seed-plus" />
           <p.p>シードの付与</p.p>
         </Card>
+        <Card
+          onClick={() => {
+            navigate("/seeds/compare");
+          }}
+        >
+          <Icon height="2em" icon="mdi:compare-horizontal" />
+          <p.p>シードの比較</p.p>
+        </Card>
       </HStack>
     </p.div>
   );

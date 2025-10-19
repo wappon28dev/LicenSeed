@@ -93,7 +93,7 @@ pub fn read_seed_def(base_path: &str) -> Result<SeedDefFileKit, String> {
 
     info!("Seed file read successfully");
     debug!("-> Seed file: {:?}", seed_file);
-    debug!("-> License body: {:?}", license_body);
+    // debug!("-> License body: {:?}", license_body);
     Ok(SeedDefFileKit {
         seed_file,
         license_body,
@@ -109,7 +109,7 @@ pub fn write_seed_def(
 ) -> Result<(), String> {
     info!("Writing seed file to {}", base_path);
     debug!("-> Seed file: {:?}", seed_file);
-    debug!("-> License body: {:?}", license_body);
+    // debug!("-> License body: {:?}", license_body);
 
     let seed_fs =
         fs::File::create(path::Path::new(base_path).join("LICENSEED.yml")).map_err(|e| {

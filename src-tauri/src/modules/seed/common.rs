@@ -11,10 +11,10 @@ pub enum SummaryEntry {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct Summary {
-    permissions: Vec<SummaryEntry>,
-    limitations: Vec<SummaryEntry>,
-    conditions: Vec<SummaryEntry>,
-    notes: Option<Vec<SummaryEntry>>,
+    pub permissions: Vec<SummaryEntry>,
+    pub limitations: Vec<SummaryEntry>,
+    pub conditions: Vec<SummaryEntry>,
+    pub notes: Option<Vec<SummaryEntry>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]

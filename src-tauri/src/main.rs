@@ -3,12 +3,13 @@
 
 mod modules;
 
+use modules::browser::open_browser;
+use modules::compatibility::get_compatibility_scores;
 use modules::files::{collect_file_entries, get_fs_metadata};
 use modules::seed::base::{
     collect_seed_base_groups, collect_seed_base_manifests, get_seed_base, write_seed_base,
 };
 use modules::seed::def::{read_seed_def, write_seed_def};
-use modules::browser::open_browser;
 
 use std::env;
 
@@ -29,6 +30,7 @@ fn main() {
         collect_seed_base_groups,
         collect_seed_base_manifests,
         open_browser,
+        get_compatibility_scores,
     ]);
 
     #[cfg(debug_assertions)]
